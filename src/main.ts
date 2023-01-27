@@ -17,8 +17,10 @@ async function run(): Promise<void> {
 			repository_id: github.context.payload.repository?.node_id,
 			start_commit_id: github.context.payload?.before,
 			end_commit_id: github.context.payload?.after,
-			author: github.context.payload?.head_commit?.author?.username,
-			ref: github.context.payload?.ref,
+			author:
+				github.context.payload?.pull_request?.user?.login ||
+				github.context.payload?.head_commit?.author?.username,
+			ref: github.context.payload?.pull_request?.head?.ref || github.context.payload?.ref,
 		};
 
 		const scanId = await startScan(secretKey, startScanPayload);
