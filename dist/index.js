@@ -99,7 +99,6 @@ const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
 const api_1 = __nccwpck_require__(8947);
 const time_1 = __nccwpck_require__(5597);
-const validators_1 = __nccwpck_require__(8694);
 const STATUS_FAILED = 'failed';
 const STATUS_SUCCEEDED = 'SUCCEEDED';
 const STATUS_TIMED_OUT = 'TIMED_OUT';
@@ -107,8 +106,6 @@ async function run() {
     var _a, _b, _c, _d, _e, _f, _g;
     try {
         const secretKey = core.getInput('secret-key');
-        const rawMaxTimeout = core.getInput('max-timeout');
-        const maxTimeout = (0, validators_1.parseTimeout)(rawMaxTimeout);
         const startScanPayload = {
             repository_id: (_a = github.context.payload.repository) === null || _a === void 0 ? void 0 : _a.node_id,
             start_commit_id: (_b = github.context.payload) === null || _b === void 0 ? void 0 : _b.before,
@@ -119,16 +116,16 @@ async function run() {
         const scanId = await (0, api_1.startScan)(secretKey, startScanPayload);
         core.info(`successfully started a scan with id: "${scanId}"`);
         const isScanCompleted = (0, api_1.checkIfScanIsCompleted)(secretKey, scanId);
-        const expirationTimestamp = (0, time_1.getCurrentUnixTime)() + maxTimeout * 1000;
+        const expirationTimestamp = (0, time_1.getCurrentUnixTime)() + 120 * 1000; // 2 minutes from now
         let scanIsCompleted = false;
         core.info('==== check if scan is completed ====');
         do {
             const result = await isScanCompleted();
             if (!result.scan_completed) {
                 core.info('==== scan is not yet completed, wait a few seconds ====');
-                await (0, time_1.sleep)(10000);
+                await (0, time_1.sleep)(5000);
                 if ((0, time_1.getCurrentUnixTime)() > expirationTimestamp) {
-                    core.info(`dependency scan reached time out: the scan did not complete within the requested timeout.`);
+                    core.info(`dependency scan reached time out: the scan did not complete within the set timeout.`);
                     core.setOutput('output', STATUS_TIMED_OUT);
                     return;
                 }
@@ -169,24 +166,6 @@ const getCurrentUnixTime = () => {
     return now.getTime();
 };
 exports.getCurrentUnixTime = getCurrentUnixTime;
-
-
-/***/ }),
-
-/***/ 8694:
-/***/ ((__unused_webpack_module, exports) => {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.parseTimeout = void 0;
-const parseTimeout = (timeout) => {
-    const parsedTimeout = parseInt(timeout);
-    if (isNaN(parsedTimeout))
-        throw new Error(`parseTimeout failed: the provided timeout: "${timeout}" could not be parsed to a valid number`);
-    return parsedTimeout;
-};
-exports.parseTimeout = parseTimeout;
 
 
 /***/ }),

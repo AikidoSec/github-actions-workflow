@@ -40,9 +40,7 @@ async function run(): Promise<void> {
 				await sleep(5000);
 
 				if (getCurrentUnixTime() > expirationTimestamp) {
-					core.info(
-						`dependency scan reached time out: the scan did not complete within the set timeout.`
-					);
+					core.info(`dependency scan reached time out: the scan did not complete within the set timeout.`);
 					core.setOutput('output', STATUS_TIMED_OUT);
 					return;
 				}

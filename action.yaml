@@ -9,7 +9,7 @@ outputs:
   outcome:
     description: |
       'The outcome of the scan. This will return `SUCCESS` in case we managed to do a scan and no new critical issues were found.\n
-      When we did not get results back in time we will return a `TIMEOUT` status but not let the action fail. 
+      When we did not get results back in time, within 2 minutes, we will return a `TIMEOUT` status but not let the action fail. 
       In case we did detect a new critical issue, the action will fail and outcome wille be `FAILED`'
 runs:
   using: 'node16'
