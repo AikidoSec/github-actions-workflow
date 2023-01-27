@@ -30,7 +30,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.checkIfScanIsCompleted = exports.startScan = void 0;
+exports.getScanStatus = exports.startScan = void 0;
 const httpClient = __importStar(__nccwpck_require__(6255));
 const AIKIDO_API_URL = 'https://app.test.aikido.dev';
 const startScan = async (secret, payload) => {
@@ -46,7 +46,7 @@ const startScan = async (secret, payload) => {
     throw new Error(`start scan failed: no scan_id received in the response: ${response.result}`);
 };
 exports.startScan = startScan;
-const checkIfScanIsCompleted = (secret, scanId) => {
+const getScanStatus = (secret, scanId) => {
     const requestClient = new httpClient.HttpClient('ci-github-actions');
     return async () => {
         var _a;
@@ -61,7 +61,7 @@ const checkIfScanIsCompleted = (secret, scanId) => {
         return response.result;
     };
 };
-exports.checkIfScanIsCompleted = checkIfScanIsCompleted;
+exports.getScanStatus = getScanStatus;
 
 
 /***/ }),
@@ -106,6 +106,7 @@ async function run() {
     var _a, _b, _c, _d, _e, _f, _g;
     try {
         const secretKey = core.getInput('secret-key');
+        const failOnTimeout = core.getInput('fail-on-timeout');
         const startScanPayload = {
             repository_id: (_a = github.context.payload.repository) === null || _a === void 0 ? void 0 : _a.node_id,
             start_commit_id: (_b = github.context.payload) === null || _b === void 0 ? void 0 : _b.before,
@@ -115,18 +116,24 @@ async function run() {
         };
         const scanId = await (0, api_1.startScan)(secretKey, startScanPayload);
         core.info(`successfully started a scan with id: "${scanId}"`);
-        const isScanCompleted = (0, api_1.checkIfScanIsCompleted)(secretKey, scanId);
+        const getScanCompletionStatus = (0, api_1.getScanStatus)(secretKey, scanId);
         const expirationTimestamp = (0, time_1.getCurrentUnixTime)() + 120 * 1000; // 2 minutes from now
         let scanIsCompleted = false;
         core.info('==== check if scan is completed ====');
         do {
-            const result = await isScanCompleted();
+            const result = await getScanCompletionStatus();
             if (!result.scan_completed) {
                 core.info('==== scan is not yet completed, wait a few seconds ====');
                 await (0, time_1.sleep)(5000);
-                if ((0, time_1.getCurrentUnixTime)() > expirationTimestamp) {
-                    core.info(`dependency scan reached time out: the scan did not complete within the set timeout.`);
-                    core.setOutput('output', STATUS_TIMED_OUT);
+                const dependencyScanTimeoutReached = (0, time_1.getCurrentUnixTime)() > expirationTimestamp;
+                if (dependencyScanTimeoutReached) {
+                    if (failOnTimeout === 'true') {
+                        core.setOutput('output', STATUS_TIMED_OUT);
+                        core.info(`dependency scan reached time out: the scan did not complete within the set timeout.`);
+                        return;
+                    }
+                    core.setOutput('output', STATUS_FAILED);
+                    core.setFailed(`dependency scan reached time out: the scan did not complete within the set timeout`);
                     return;
                 }
                 continue;
