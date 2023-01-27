@@ -5,6 +5,10 @@ inputs:
   secret-key:
     description: 'Secret key provided by Aikido'
     required: true
+  fail-on-timeout:
+    description: 'Whether or not the action should fail when the scan does not complete within 2 minutes.'
+    required: false
+    default: "true"
 outputs:
   outcome:
     description: |

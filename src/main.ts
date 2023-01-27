@@ -11,6 +11,7 @@ const STATUS_TIMED_OUT = 'TIMED_OUT';
 async function run(): Promise<void> {
 	try {
 		const secretKey: string = core.getInput('secret-key');
+		const failOnTimeout: string = core.getInput('fail-on-timeout');
 
 		const startScanPayload = {
 			repository_id: github.context.payload.repository?.node_id,
@@ -39,9 +40,20 @@ async function run(): Promise<void> {
 				core.info('==== scan is not yet completed, wait a few seconds ====');
 				await sleep(5000);
 
-				if (getCurrentUnixTime() > expirationTimestamp) {
-					core.info(`dependency scan reached time out: the scan did not complete within the set timeout.`);
-					core.setOutput('output', STATUS_TIMED_OUT);
+				const dependencyScanTimeoutReached = getCurrentUnixTime() > expirationTimestamp;
+				if (dependencyScanTimeoutReached) {
+					if (failOnTimeout === 'true') {
+						core.setOutput('output', STATUS_TIMED_OUT);
+						core.info(
+							`dependency scan reached time out: the scan did not complete within the set timeout.`
+						);
+						return;
+					}
+
+					core.setOutput('output', STATUS_FAILED);
+					core.setFailed(
+						`dependency scan reached time out: the scan did not complete within the set timeout`
+					);
 					return;
 				}
 
