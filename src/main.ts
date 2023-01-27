@@ -3,7 +3,6 @@ import * as github from '@actions/github';
 
 import { checkIfScanIsCompleted, startScan } from './api';
 import { getCurrentUnixTime, sleep } from './time';
-import { parseTimeout } from './validators';
 
 const STATUS_FAILED = 'failed';
 const STATUS_SUCCEEDED = 'SUCCEEDED';
@@ -12,9 +11,6 @@ const STATUS_TIMED_OUT = 'TIMED_OUT';
 async function run(): Promise<void> {
 	try {
 		const secretKey: string = core.getInput('secret-key');
-		const rawMaxTimeout: string = core.getInput('max-timeout');
-
-		const maxTimeout = parseTimeout(rawMaxTimeout);
 
 		const startScanPayload = {
 			repository_id: github.context.payload.repository?.node_id,
@@ -30,7 +26,7 @@ async function run(): Promise<void> {
 
 		const isScanCompleted = checkIfScanIsCompleted(secretKey, scanId);
 
-		const expirationTimestamp = getCurrentUnixTime() + maxTimeout * 1000;
+		const expirationTimestamp = getCurrentUnixTime() + 120 * 1000; // 2 minutes from now
 
 		let scanIsCompleted = false;
 
@@ -41,11 +37,11 @@ async function run(): Promise<void> {
 
 			if (!result.scan_completed) {
 				core.info('==== scan is not yet completed, wait a few seconds ====');
-				await sleep(10000);
+				await sleep(5000);
 
 				if (getCurrentUnixTime() > expirationTimestamp) {
 					core.info(
-						`dependency scan reached time out: the scan did not complete within the requested timeout.`
+						`dependency scan reached time out: the scan did not complete within the set timeout.`
 					);
 					core.setOutput('output', STATUS_TIMED_OUT);
 					return;
