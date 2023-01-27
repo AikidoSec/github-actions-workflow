@@ -51,6 +51,10 @@ async function run(): Promise<void> {
 			scanIsCompleted = true;
 
 			if (result.new_critical_issues_found > 0) {
+				for (const linkToIssue of result.issue_links) {
+					core.error(`New critical issue detected. Check it out at: ${linkToIssue}`);
+				}
+
 				throw new Error(
 					`dependency scan completed: found ${result.new_critical_issues_found} new critical issues`
 				);

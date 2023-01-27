@@ -2,11 +2,15 @@ import * as httpClient from '@actions/http-client';
 
 const AIKIDO_API_URL = 'https://app.test.aikido.dev';
 
-type GetScanStatusResponse = {
-	scan_completed: boolean;
-	new_critical_issues_found: number;
-	issues: string;
-};
+type GetScanStatusResponse =
+	| {
+			scan_completed: true;
+			new_critical_issues_found: number;
+			issue_links: string[];
+	  }
+	| {
+			scan_completed: false;
+	  };
 
 export const startScan = async (secret: string, payload: Object): Promise<number> => {
 	const requestClient = new httpClient.HttpClient('ci-github-actions');
