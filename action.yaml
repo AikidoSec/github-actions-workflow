@@ -1,0 +1,19 @@
+name: 'Aikido vulnerability scanner'
+description: 'This action triggers a scan in Aikido based on the current state of the code. It will throw an error if any new critical issues were found.'
+inputs:
+  secret-key:
+    description: 'Secret key provided by Aikido'
+    required: true
+  max-timeout:
+    description: 'Max time in seconds to wait for a scan to complete'
+    required: false
+    default: '180'
+outputs:
+  outcome:
+    description: |
+      'The outcome of the scan. This will return `SUCCESS` in case we managed to do a scan and no new critical issues were found.\n
+      When we did not get results back in time we will return a `TIMEOUT` status but not let the action fail. 
+      In case we did detect a new critical issue, the action will fail and outcome wille be `FAILED`'
+runs:
+  using: 'node16'
+  main: 'dist/index.js'
