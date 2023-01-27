@@ -1,7 +1,7 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
 
-import { checkIfScanIsCompleted, startScan } from './api';
+import { getScanStatus, startScan } from './api';
 import { getCurrentUnixTime, sleep } from './time';
 
 const STATUS_FAILED = 'failed';
@@ -24,7 +24,7 @@ async function run(): Promise<void> {
 
 		core.info(`successfully started a scan with id: "${scanId}"`);
 
-		const isScanCompleted = checkIfScanIsCompleted(secretKey, scanId);
+		const getScanCompletionStatus = getScanStatus(secretKey, scanId);
 
 		const expirationTimestamp = getCurrentUnixTime() + 120 * 1000; // 2 minutes from now
 
@@ -33,7 +33,7 @@ async function run(): Promise<void> {
 		core.info('==== check if scan is completed ====');
 
 		do {
-			const result = await isScanCompleted();
+			const result = await getScanCompletionStatus();
 
 			if (!result.scan_completed) {
 				core.info('==== scan is not yet completed, wait a few seconds ====');
