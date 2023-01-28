@@ -45,17 +45,15 @@ async function run(): Promise<void> {
 				const dependencyScanTimeoutReached = getCurrentUnixTime() > expirationTimestamp;
 				if (dependencyScanTimeoutReached) {
 					if (failOnTimeout === 'true') {
-						core.setOutput('output', STATUS_TIMED_OUT);
-						core.info(
-							`dependency scan reached time out: the scan did not complete within the set timeout.`
+						core.setOutput('output', STATUS_FAILED);
+						core.setFailed(
+							`dependency scan reached time out: the scan did not complete within the set timeout`
 						);
 						return;
 					}
 
-					core.setOutput('output', STATUS_FAILED);
-					core.setFailed(
-						`dependency scan reached time out: the scan did not complete within the set timeout`
-					);
+					core.setOutput('output', STATUS_TIMED_OUT);
+					core.info(`dependency scan reached time out: the scan did not complete within the set timeout.`);
 					return;
 				}
 
