@@ -4,7 +4,7 @@ import * as github from '@actions/github';
 import { getScanStatus, startScan } from './api';
 import { getCurrentUnixTime, sleep } from './time';
 
-const STATUS_FAILED = 'failed';
+const STATUS_FAILED = 'FAILED';
 const STATUS_SUCCEEDED = 'SUCCEEDED';
 const STATUS_TIMED_OUT = 'TIMED_OUT';
 
