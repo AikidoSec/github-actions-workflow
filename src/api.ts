@@ -1,6 +1,6 @@
 import * as httpClient from '@actions/http-client';
 
-const AIKIDO_API_URL = 'https://app.test.aikido.dev';
+const AIKIDO_API_URL = 'https://app.aikido.dev';
 
 type GetScanStatusResponse =
 	| {
@@ -27,7 +27,7 @@ export const startScan = async (secret: string, payload: Object): Promise<number
 	throw new Error(`start scan failed: no scan_id received in the response: ${response.result}`);
 };
 
-export const checkIfScanIsCompleted = (secret: string, scanId: number): (() => Promise<GetScanStatusResponse>) => {
+export const getScanStatus = (secret: string, scanId: number): (() => Promise<GetScanStatusResponse>) => {
 	const requestClient = new httpClient.HttpClient('ci-github-actions');
 
 	return async (): Promise<GetScanStatusResponse> => {
