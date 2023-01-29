@@ -31,6 +31,31 @@ The action has 3 possible outcomes:
 - 'FAILED': the scan was completed successfully, but we found new critical issues
 - 'TIMED_OUT': the scan did not complete before the set timeout. In this case we won't let the action fail, but we do return this special case to not block your pipeline.
 
+By default, the action fails if the scan did not complete within 2 minutes. You can control this behaviour by setting the `fail-on-timeout` parameter to false for the action, like so: 
+
+```yaml
+name: My Github action
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Detect new vulnerabilities
+        uses: AikidoSec/github-actions-worfkflow
+        with:
+            secret-key: ${{ secrets.AIKIDO_SECRET_KEY }}
+            fail-on-timeout: false
+```
+
+Now the action will still shut down after 2 minutes, but it won't fail and block your pipeline.
+
 ## Contributing
 
 Install the dependencies  
