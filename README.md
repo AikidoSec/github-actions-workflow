@@ -4,14 +4,26 @@ This repository contains an application that can be used in Github action workfl
 
 ## Using the action
 
-Add the following snippet to your Github action workflow file: 
+This is an example workflow you could use to trigger a scan each time changes are pushed to your main branch: 
 
 ```yaml
- - name: Detect new vulnerabilities
-    uses: AikidoSec/github-actions-worfkflow
-    with:
-        secret-key: ${{ secrets.AIKIDO_SECRET_KEY }}
-        max-timeout: 180
+name: My Github action
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Detect new vulnerabilities
+        uses: AikidoSec/github-actions-worfkflow
+        with:
+            secret-key: ${{ secrets.AIKIDO_SECRET_KEY }}
 ```
 
 The action has 3 possible outcomes: 
