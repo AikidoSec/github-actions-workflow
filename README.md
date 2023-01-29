@@ -54,7 +54,41 @@ jobs:
             fail-on-timeout: false
 ```
 
-Now the action will still shut down after 2 minutes, but it won't fail and block your pipeline.
+Now the action will still shut down after 2 minutes, but it won't fail and block your pipeline. You can combine this behaviour with other marketplace integrations to get notified when the action times out. For example, you can send a slack notification, but only when the Aikido action timed out:
+
+```yaml
+name: My Github action
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Detect new vulnerabilities
+        uses: AikidoSec/github-actions-worfkflow
+        id: aikido_vulnerabilities
+        with:
+            secret-key: ${{ secrets.AIKIDO_SECRET_KEY }}
+            fail-on-timeout: false
+    
+      - name: Send Slack message in case Aikido scanner timed out
+        uses: slackapi/slack-github-action@v1.23.0
+        if: steps.aikido_vulnerabilities.outputs.outcome === 'TIMED_OUT'
+        with:
+            payload: |
+            {
+                "key": "value",
+                "foo": "bar"
+            }
+        env:
+            SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+```
 
 ## Contributing
 
