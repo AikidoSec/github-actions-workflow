@@ -32,7 +32,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getScanStatus = exports.startScan = void 0;
 const httpClient = __importStar(__nccwpck_require__(6255));
-const AIKIDO_API_URL = 'https://app.test.aikido.dev';
+const AIKIDO_API_URL = 'https://app.aikido.dev';
 const startScan = async (secret, payload) => {
     var _a, _b;
     const requestClient = new httpClient.HttpClient('ci-github-actions');
@@ -99,7 +99,7 @@ const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
 const api_1 = __nccwpck_require__(8947);
 const time_1 = __nccwpck_require__(5597);
-const STATUS_FAILED = 'failed';
+const STATUS_FAILED = 'FAILED';
 const STATUS_SUCCEEDED = 'SUCCEEDED';
 const STATUS_TIMED_OUT = 'TIMED_OUT';
 async function run() {
