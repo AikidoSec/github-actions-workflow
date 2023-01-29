@@ -1,6 +1,6 @@
 import * as httpClient from '@actions/http-client';
 
-const AIKIDO_API_URL = 'https://app.test.aikido.dev';
+const AIKIDO_API_URL = 'https://app.aikido.dev';
 
 type GetScanStatusResponse =
 	| {
