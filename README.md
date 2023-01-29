@@ -1,6 +1,6 @@
 # Aikido Security Github action
 
-This repository contains an application that can be used in Github action workflows. It will trigger a scan in Aikido to make sure no new critical issues are introduced into your application.
+This repository contains an application that can be used in Github action workflows. It will trigger a scan in Aikido to make sure no new critical issues are introduced into your application. This action is available in any paid plan at Aikido.
 
 ## Using the action
 
