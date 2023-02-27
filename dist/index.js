@@ -38,6 +38,9 @@ const startScan = async (secret, payload) => {
     const requestClient = new httpClient.HttpClient('ci-github-actions');
     const url = `${AIKIDO_API_URL}/api/integrations/continuous_integration/scan/repository`;
     const response = await requestClient.postJson(url, payload, { 'X-AIK-API-SECRET': secret });
+    if (response.statusCode === 401) {
+        throw new Error(`Start scan failed. The provided api key is most likely no longer valid and has been rotated or revoked. Visit https://app.aikido.dev/settings/integrations/continuous-integration to generate a new key.`);
+    }
     if (response.statusCode !== 200) {
         throw new Error(`start scan failed: unable to start scan: ${JSON.stringify((_a = response.result) !== null && _a !== void 0 ? _a : {})}`);
     }

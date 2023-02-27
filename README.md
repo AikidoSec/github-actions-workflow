@@ -107,3 +107,17 @@ $ npm run build && npm run package
 The action.yml defines the inputs and output of our action.
 
 See the [documentation](https://help.github.com/en/articles/metadata-syntax-for-github-actions)
+
+## Creating a new release
+
+To update the app, you will need to update the app's bundle. First run
+```shell
+npm run build
+```
+Followed by:
+```shell
+npm run package
+```
+The contents of the dist folder should now be altered, commit these changes and merge them into the main branch.
+
+Next, create a release on Github by clicking on `tags` and then `releases`. Then you can draft and release a new version.

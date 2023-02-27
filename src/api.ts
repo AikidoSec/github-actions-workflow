@@ -19,9 +19,11 @@ export const startScan = async (secret: string, payload: Object): Promise<number
 	const response = await requestClient.postJson<{ scan_id: number }>(url, payload, { 'X-AIK-API-SECRET': secret });
 
 	if (response.statusCode === 401) {
-		throw new Error(`Start scan failed. The provided api key is most likely no longer valid and has been rotated or revoked. Visit https://app.aikido.dev/settings/integrations/continuous-integration to generate a new key.`);
+		throw new Error(
+			`Start scan failed. The provided api key is most likely no longer valid and has been rotated or revoked. Visit https://app.aikido.dev/settings/integrations/continuous-integration to generate a new key.`
+		);
 	}
-	
+
 	if (response.statusCode !== 200) {
 		throw new Error(`start scan failed: unable to start scan: ${JSON.stringify(response.result ?? {})}`);
 	}
