@@ -3,6 +3,8 @@ import { TypedResponse } from '@actions/http-client/lib/interfaces';
 
 const AIKIDO_API_URL = 'https://app.aikido.dev';
 
+type StartScanResponse = { scan_id: number };
+
 type GetScanStatusResponse =
 	| {
 			scan_completed: true;
@@ -18,9 +20,9 @@ export const startScan = async (secret: string, payload: Object): Promise<number
 
 	const url = `${AIKIDO_API_URL}/api/integrations/continuous_integration/scan/repository`;
 
-	let response: TypedResponse<{ scan_id: number }> | undefined;
+	let response: TypedResponse<StartScanResponse> | undefined;
 	try {
-		response = await requestClient.postJson<{ scan_id: number }>(url, payload, { 'X-AIK-API-SECRET': secret });
+		response = await requestClient.postJson<StartScanResponse>(url, payload, { 'X-AIK-API-SECRET': secret });
 	} catch (error) {
 		if (error instanceof httpClient.HttpClientError && error.statusCode === 401) {
 			throw new Error(
