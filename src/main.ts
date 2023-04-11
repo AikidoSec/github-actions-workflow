@@ -15,7 +15,7 @@ async function run(): Promise<void> {
 
 		const startScanPayload = {
 			repository_id: github.context.payload.repository?.node_id,
-			start_commit_id: github.context.payload?.before,
+			start_commit_id: github.context.payload?.base?.sha,
 			end_commit_id: github.context.payload?.after,
 			author:
 				github.context.payload?.pull_request?.user?.login ||
@@ -24,7 +24,7 @@ async function run(): Promise<void> {
 			pull_request_url: github.context.payload?.pull_request?.html_url,
 		};
 
-		core.info(`DEBUG ==== ref_name ${JSON.stringify(startScanPayload)} ====`); 
+		core.info(`DEBUG ==== ${JSON.stringify(github.context.payload)} ====`); 
 
 		const scanId = await startScan(secretKey, startScanPayload);
 
