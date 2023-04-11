@@ -17,6 +17,7 @@ async function run(): Promise<void> {
 			repository_id: github.context.payload.repository?.node_id,
 			start_commit_id: github.context.payload?.before,
 			end_commit_id: github.context.payload?.after,
+			branch_name: github.context.payload?.ref_name,
 			author:
 				github.context.payload?.pull_request?.user?.login ||
 				github.context.payload?.head_commit?.author?.username,

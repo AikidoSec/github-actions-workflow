@@ -114,7 +114,7 @@ const STATUS_FAILED = 'FAILED';
 const STATUS_SUCCEEDED = 'SUCCEEDED';
 const STATUS_TIMED_OUT = 'TIMED_OUT';
 async function run() {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p;
     try {
         const secretKey = core.getInput('secret-key');
         const failOnTimeout = core.getInput('fail-on-timeout');
@@ -122,9 +122,10 @@ async function run() {
             repository_id: (_a = github.context.payload.repository) === null || _a === void 0 ? void 0 : _a.node_id,
             start_commit_id: (_b = github.context.payload) === null || _b === void 0 ? void 0 : _b.before,
             end_commit_id: (_c = github.context.payload) === null || _c === void 0 ? void 0 : _c.after,
-            author: ((_f = (_e = (_d = github.context.payload) === null || _d === void 0 ? void 0 : _d.pull_request) === null || _e === void 0 ? void 0 : _e.user) === null || _f === void 0 ? void 0 : _f.login) ||
-                ((_j = (_h = (_g = github.context.payload) === null || _g === void 0 ? void 0 : _g.head_commit) === null || _h === void 0 ? void 0 : _h.author) === null || _j === void 0 ? void 0 : _j.username),
-            ref: ((_m = (_l = (_k = github.context.payload) === null || _k === void 0 ? void 0 : _k.pull_request) === null || _l === void 0 ? void 0 : _l.head) === null || _m === void 0 ? void 0 : _m.ref) || ((_o = github.context.payload) === null || _o === void 0 ? void 0 : _o.ref),
+            branch_name: (_d = github.context.payload) === null || _d === void 0 ? void 0 : _d.ref_name,
+            author: ((_g = (_f = (_e = github.context.payload) === null || _e === void 0 ? void 0 : _e.pull_request) === null || _f === void 0 ? void 0 : _f.user) === null || _g === void 0 ? void 0 : _g.login) ||
+                ((_k = (_j = (_h = github.context.payload) === null || _h === void 0 ? void 0 : _h.head_commit) === null || _j === void 0 ? void 0 : _j.author) === null || _k === void 0 ? void 0 : _k.username),
+            ref: ((_o = (_m = (_l = github.context.payload) === null || _l === void 0 ? void 0 : _l.pull_request) === null || _m === void 0 ? void 0 : _m.head) === null || _o === void 0 ? void 0 : _o.ref) || ((_p = github.context.payload) === null || _p === void 0 ? void 0 : _p.ref),
         };
         const scanId = await (0, api_1.startScan)(secretKey, startScanPayload);
         core.info(`successfully started a scan with id: "${scanId}"`);
