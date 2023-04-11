@@ -24,6 +24,8 @@ async function run(): Promise<void> {
 			ref: github.context.payload?.pull_request?.head?.ref || github.context.payload?.ref,
 		};
 
+        core.info(`DEBUG ==== ref_name ${github.context.payload?.ref_name} ====`);
+
 		const scanId = await startScan(secretKey, startScanPayload);
 
 		core.info(`successfully started a scan with id: "${scanId}"`);
