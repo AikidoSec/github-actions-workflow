@@ -17,14 +17,14 @@ async function run(): Promise<void> {
 			repository_id: github.context.payload.repository?.node_id,
 			start_commit_id: github.context.payload?.before,
 			end_commit_id: github.context.payload?.after,
-			branch_name: github.context.payload?.ref_name,
 			author:
 				github.context.payload?.pull_request?.user?.login ||
 				github.context.payload?.head_commit?.author?.username,
 			ref: github.context.payload?.pull_request?.head?.ref || github.context.payload?.ref,
+			pull_request_url: github.context.payload?.pull_request?.html_url,
 		};
 
-        core.info(`DEBUG ==== ref_name ${JSON.stringify(github.context)} ====`);
+        core.info(`DEBUG ==== ref_name ${JSON.stringify(startScanPayload)} ====`);
 
 		const scanId = await startScan(secretKey, startScanPayload);
 
