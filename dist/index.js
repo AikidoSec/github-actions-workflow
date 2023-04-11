@@ -114,7 +114,7 @@ const STATUS_FAILED = 'FAILED';
 const STATUS_SUCCEEDED = 'SUCCEEDED';
 const STATUS_TIMED_OUT = 'TIMED_OUT';
 async function run() {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p;
     try {
         const secretKey = core.getInput('secret-key');
         const failOnTimeout = core.getInput('fail-on-timeout');
@@ -127,7 +127,7 @@ async function run() {
                 ((_k = (_j = (_h = github.context.payload) === null || _h === void 0 ? void 0 : _h.head_commit) === null || _j === void 0 ? void 0 : _j.author) === null || _k === void 0 ? void 0 : _k.username),
             ref: ((_o = (_m = (_l = github.context.payload) === null || _l === void 0 ? void 0 : _l.pull_request) === null || _m === void 0 ? void 0 : _m.head) === null || _o === void 0 ? void 0 : _o.ref) || ((_p = github.context.payload) === null || _p === void 0 ? void 0 : _p.ref),
         };
-        core.info(`DEBUG ==== ref_name ${(_q = github.context.payload) === null || _q === void 0 ? void 0 : _q.ref_name} ====`);
+        core.info(`DEBUG ==== ref_name ${JSON.stringify(github.context)} ====`);
         const scanId = await (0, api_1.startScan)(secretKey, startScanPayload);
         core.info(`successfully started a scan with id: "${scanId}"`);
         const getScanCompletionStatus = (0, api_1.getScanStatus)(secretKey, scanId);
