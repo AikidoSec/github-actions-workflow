@@ -114,7 +114,7 @@ const STATUS_FAILED = 'FAILED';
 const STATUS_SUCCEEDED = 'SUCCEEDED';
 const STATUS_TIMED_OUT = 'TIMED_OUT';
 async function run() {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w;
     try {
         const secretKey = core.getInput('secret-key');
         const failOnTimeout = core.getInput('fail-on-timeout');
@@ -127,11 +127,12 @@ async function run() {
             ref: ((_m = (_l = (_k = github.context.payload) === null || _k === void 0 ? void 0 : _k.pull_request) === null || _l === void 0 ? void 0 : _l.head) === null || _m === void 0 ? void 0 : _m.ref) || ((_o = github.context.payload) === null || _o === void 0 ? void 0 : _o.ref),
             pull_request_metadata: {
                 pull_request_url: (_q = (_p = github.context.payload) === null || _p === void 0 ? void 0 : _p.pull_request) === null || _q === void 0 ? void 0 : _q.html_url,
-                start_commit_id: (_s = (_r = github.context.payload) === null || _r === void 0 ? void 0 : _r.base) === null || _s === void 0 ? void 0 : _s.sha,
-                end_commit_id: (_v = (_u = (_t = github.context.payload) === null || _t === void 0 ? void 0 : _t.pull_request) === null || _u === void 0 ? void 0 : _u.head) === null || _v === void 0 ? void 0 : _v.sha,
+                start_commit_id: (_t = (_s = (_r = github.context.payload) === null || _r === void 0 ? void 0 : _r.pull_request) === null || _s === void 0 ? void 0 : _s.base) === null || _t === void 0 ? void 0 : _t.sha,
+                end_commit_id: (_w = (_v = (_u = github.context.payload) === null || _u === void 0 ? void 0 : _u.pull_request) === null || _v === void 0 ? void 0 : _v.head) === null || _w === void 0 ? void 0 : _w.sha,
             },
         };
         const scanId = await (0, api_1.startScan)(secretKey, startScanPayload);
+        core.info(`DEBUG: ${github}`);
         core.info(`successfully started a scan with id: "${scanId}"`);
         const getScanCompletionStatus = (0, api_1.getScanStatus)(secretKey, scanId);
         const expirationTimestamp = (0, time_1.getCurrentUnixTime)() + 120 * 1000; // 2 minutes from now
