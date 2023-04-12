@@ -23,12 +23,14 @@ async function run(): Promise<void> {
 			ref: github.context.payload?.pull_request?.head?.ref || github.context.payload?.ref,
 			pull_request_metadata: {
 				pull_request_url: github.context.payload?.pull_request?.html_url,
-				start_commit_id: github.context.payload?.base?.sha,
+				start_commit_id: github.context.payload?.pull_request?.base?.sha,
 				end_commit_id: github.context.payload?.pull_request?.head?.sha,
 			},
 		};
 
 		const scanId = await startScan(secretKey, startScanPayload);
+
+		core.info(`DEBUG: ${github}`);
 
 		core.info(`successfully started a scan with id: "${scanId}"`);
 
