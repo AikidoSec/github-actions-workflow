@@ -114,21 +114,20 @@ const STATUS_FAILED = 'FAILED';
 const STATUS_SUCCEEDED = 'SUCCEEDED';
 const STATUS_TIMED_OUT = 'TIMED_OUT';
 async function run() {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y;
     try {
         const secretKey = core.getInput('secret-key');
         const failOnTimeout = core.getInput('fail-on-timeout');
         const startScanPayload = {
             repository_id: (_a = github.context.payload.repository) === null || _a === void 0 ? void 0 : _a.node_id,
-            start_commit_id: (_b = github.context.payload) === null || _b === void 0 ? void 0 : _b.before,
-            end_commit_id: (_c = github.context.payload) === null || _c === void 0 ? void 0 : _c.after,
-            author: ((_f = (_e = (_d = github.context.payload) === null || _d === void 0 ? void 0 : _d.pull_request) === null || _e === void 0 ? void 0 : _e.user) === null || _f === void 0 ? void 0 : _f.login) ||
-                ((_j = (_h = (_g = github.context.payload) === null || _g === void 0 ? void 0 : _g.head_commit) === null || _h === void 0 ? void 0 : _h.author) === null || _j === void 0 ? void 0 : _j.username),
-            ref: ((_m = (_l = (_k = github.context.payload) === null || _k === void 0 ? void 0 : _k.pull_request) === null || _l === void 0 ? void 0 : _l.head) === null || _m === void 0 ? void 0 : _m.ref) || ((_o = github.context.payload) === null || _o === void 0 ? void 0 : _o.ref),
+            start_commit_id: ((_d = (_c = (_b = github.context.payload) === null || _b === void 0 ? void 0 : _b.pull_request) === null || _c === void 0 ? void 0 : _c.base) === null || _d === void 0 ? void 0 : _d.sha) || ((_e = github.context.payload) === null || _e === void 0 ? void 0 : _e.before),
+            end_commit_id: ((_h = (_g = (_f = github.context.payload) === null || _f === void 0 ? void 0 : _f.pull_request) === null || _g === void 0 ? void 0 : _g.head) === null || _h === void 0 ? void 0 : _h.sha) || ((_j = github.context.payload) === null || _j === void 0 ? void 0 : _j.after),
+            author: ((_m = (_l = (_k = github.context.payload) === null || _k === void 0 ? void 0 : _k.pull_request) === null || _l === void 0 ? void 0 : _l.user) === null || _m === void 0 ? void 0 : _m.login) ||
+                ((_q = (_p = (_o = github.context.payload) === null || _o === void 0 ? void 0 : _o.head_commit) === null || _p === void 0 ? void 0 : _p.author) === null || _q === void 0 ? void 0 : _q.username),
+            ref: ((_t = (_s = (_r = github.context.payload) === null || _r === void 0 ? void 0 : _r.pull_request) === null || _s === void 0 ? void 0 : _s.head) === null || _t === void 0 ? void 0 : _t.ref) || ((_u = github.context.payload) === null || _u === void 0 ? void 0 : _u.ref),
             pull_request_metadata: {
-                html_url: (_q = (_p = github.context.payload) === null || _p === void 0 ? void 0 : _p.pull_request) === null || _q === void 0 ? void 0 : _q.html_url,
-                base_sha: (_t = (_s = (_r = github.context.payload) === null || _r === void 0 ? void 0 : _r.pull_request) === null || _s === void 0 ? void 0 : _s.base) === null || _t === void 0 ? void 0 : _t.sha,
-                head_sha: (_w = (_v = (_u = github.context.payload) === null || _u === void 0 ? void 0 : _u.pull_request) === null || _v === void 0 ? void 0 : _v.head) === null || _w === void 0 ? void 0 : _w.sha,
+                title: (_w = (_v = github.context.payload) === null || _v === void 0 ? void 0 : _v.pull_request) === null || _w === void 0 ? void 0 : _w.title,
+                url: (_y = (_x = github.context.payload) === null || _x === void 0 ? void 0 : _x.pull_request) === null || _y === void 0 ? void 0 : _y.html_url,
             },
         };
         const scanId = await (0, api_1.startScan)(secretKey, startScanPayload);
