@@ -132,7 +132,7 @@ async function run() {
             },
         };
         const scanId = await (0, api_1.startScan)(secretKey, startScanPayload);
-        core.info(`DEBUG: ${github}`);
+        core.info(`DEBUG: ${JSON.stringify(github)}`);
         core.info(`successfully started a scan with id: "${scanId}"`);
         const getScanCompletionStatus = (0, api_1.getScanStatus)(secretKey, scanId);
         const expirationTimestamp = (0, time_1.getCurrentUnixTime)() + 120 * 1000; // 2 minutes from now
