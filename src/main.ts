@@ -21,6 +21,11 @@ async function run(): Promise<void> {
 				github.context.payload?.pull_request?.user?.login ||
 				github.context.payload?.head_commit?.author?.username,
 			ref: github.context.payload?.pull_request?.head?.ref || github.context.payload?.ref,
+			pull_request_metadata: {
+				pull_request_url: github.context.payload?.pull_request?.html_url,
+				start_commit_id: github.context.payload?.base?.sha,
+				end_commit_id: github.context.payload?.pull_request?.head?.sha,
+			},
 		};
 
 		const scanId = await startScan(secretKey, startScanPayload);
