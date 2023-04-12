@@ -4,14 +4,14 @@ This repository contains an application that can be used in Github action workfl
 
 ## Using the action
 
-This is an example workflow you could use to trigger a scan each time changes are pushed to your main branch: 
+This is an example workflow you could use to trigger a scan for each new pull request
 
 ```yaml
 name: My Github action
 on:
-  push:
+  pull_request:
     branches:
-      - main
+      - '*'
 
 jobs:
   test:
@@ -36,9 +36,9 @@ By default, the action fails if the scan did not complete within 2 minutes. You 
 ```yaml
 name: My Github action
 on:
-  push:
+  pull_request:
     branches:
-      - main
+      - '*'
 
 jobs:
   test:
@@ -59,9 +59,9 @@ Now the action will still shut down after 2 minutes, but it won't fail and block
 ```yaml
 name: My Github action
 on:
-  push:
+  pull_request:
     branches:
-      - main
+      - '*'
 
 jobs:
   test:
