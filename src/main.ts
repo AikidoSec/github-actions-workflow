@@ -30,7 +30,7 @@ async function run(): Promise<void> {
 
 		const scanId = await startScan(secretKey, startScanPayload);
 
-		core.info(`DEBUG: ${github}`);
+		core.info(`DEBUG: ${JSON.stringify(github)}`);
 
 		core.info(`successfully started a scan with id: "${scanId}"`);
 
