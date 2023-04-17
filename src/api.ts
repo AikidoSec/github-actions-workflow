@@ -30,10 +30,10 @@ export const startScan = async (secret: string, payload: Object): Promise<number
 			);
 		}
 
-		throw new Error(`start scan failed: an unexpected error occurred whilst starting the scan`)
+		throw new Error(`start scan failed: an unexpected error occurred whilst starting the scan`);
 	}
 
-	if (response === undefined) throw new Error(`start scan failed: did not get a response`)
+	if (response === undefined) throw new Error(`start scan failed: did not get a response`);
 
 	if (response.statusCode !== 200) {
 		throw new Error(`start scan failed: unable to start scan: ${JSON.stringify(response.result ?? {})}`);
@@ -44,12 +44,23 @@ export const startScan = async (secret: string, payload: Object): Promise<number
 	throw new Error(`start scan failed: no scan_id received in the response: ${response.result}`);
 };
 
-export const getScanStatus = (secret: string, scanId: number): (() => Promise<GetScanStatusResponse>) => {
+export const getScanStatus = (
+	secret: string,
+	scanId: number,
+	fromSeverity: string,
+	failOnDependencyScan: string,
+	failOnSastScan: string,
+	failOnSecretsScan: string
+): (() => Promise<GetScanStatusResponse>) => {
 	const requestClient = new httpClient.HttpClient('ci-github-actions');
 
 	return async (): Promise<GetScanStatusResponse> => {
 		const url = new URL(`${AIKIDO_API_URL}/api/integrations/continuous_integration/scan/repository`);
 		url.searchParams.set('scan_id', scanId.toString());
+		url.searchParams.set('from_severity', fromSeverity);
+		url.searchParams.set('fail_on_dependency_scan', failOnDependencyScan);
+		url.searchParams.set('fail_on_sast_scan', failOnSastScan);
+		url.searchParams.set('fail_on_secrets_scan', failOnSecretsScan);
 
 		const response = await requestClient.getJson<GetScanStatusResponse>(url.toString(), {
 			'X-AIK-API-SECRET': secret,

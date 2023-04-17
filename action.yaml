@@ -5,8 +5,24 @@ inputs:
   secret-key:
     description: 'Secret key provided by Aikido'
     required: true
+  from-severity:
+    description: 'Which minimum severity Aikido should detect. Can be one of the following: LOW, MEDIUM, HIGH, CRITICAL'
+    required: false
+    default: "CRITICAL"
   fail-on-timeout:
     description: 'Whether or not the action should fail when the scan does not complete within 2 minutes.'
+    required: false
+    default: "true"
+  fail-on-dependency-scan:
+    description: 'Whether or not the action should fail when the pull request introduced new dependency issues with critical severity'
+    required: false
+    default: "true"
+  fail-on-secrets-scan:
+    description: 'Whether or not the action should fail when the pull request introduced new secrets are detected'
+    required: false
+    default: "true"
+  fail-on-sast-scan:
+    description: 'Whether or not the action should fail when the pull request introduced new SAST issues with critical severity'
     required: false
     default: "true"
 outputs:

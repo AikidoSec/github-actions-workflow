@@ -11,7 +11,17 @@ const STATUS_TIMED_OUT = 'TIMED_OUT';
 async function run(): Promise<void> {
 	try {
 		const secretKey: string = core.getInput('secret-key');
+		const fromSeverity: string = core.getInput('from-severity');
 		const failOnTimeout: string = core.getInput('fail-on-timeout');
+		const failOnDependencyScan: string = core.getInput('fail-on-dependency-scan');
+		const failOnSastScan: string = core.getInput('fail-on-sast-scan');
+		const failOnSecretsScan: string = core.getInput('fail-on-secrets-scan');
+
+		if (!['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'].includes(fromSeverity.toUpperCase())) {
+			core.setOutput('output', STATUS_FAILED);
+			core.info(`Invalid property value for from-severity. Allowed values are: LOW, MEDIUM, HIGH, CRITICAL`);
+			return;
+		}
 
 		const startScanPayload = {
 			repository_id: github.context.payload.repository?.node_id,
@@ -31,7 +41,14 @@ async function run(): Promise<void> {
 
 		core.info(`successfully started a scan with id: "${scanId}"`);
 
-		const getScanCompletionStatus = getScanStatus(secretKey, scanId);
+		const getScanCompletionStatus = getScanStatus(
+			secretKey,
+			scanId,
+			fromSeverity,
+			failOnDependencyScan,
+			failOnSastScan,
+			failOnSecretsScan
+		);
 
 		const expirationTimestamp = getCurrentUnixTime() + 120 * 1000; // 2 minutes from now
 
