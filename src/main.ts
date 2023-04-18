@@ -46,14 +46,7 @@ async function run(): Promise<void> {
 
 		core.info(`successfully started a scan with id: "${scanId}"`);
 
-		const getScanCompletionStatus = getScanStatus(
-			secretKey,
-			scanId,
-			fromSeverity,
-			failOnDependencyScan,
-			failOnSastScan,
-			failOnSecretsScan
-		);
+		const getScanCompletionStatus = getScanStatus(secretKey, scanId);
 
 		const expirationTimestamp = getCurrentUnixTime() + 120 * 1000; // 2 minutes from now
 
