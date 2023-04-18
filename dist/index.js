@@ -170,11 +170,21 @@ async function run() {
                 continue;
             }
             scanIsCompleted = true;
-            if (result.new_critical_issues_found > 0) {
-                for (const linkToIssue of result.issue_links) {
+            const { new_critical_issues_found = 0, issue_links = [], new_dependency_issues_found = 0, new_secrets_issues_found = 0, new_sast_issues_found = 0, } = result;
+            if (new_critical_issues_found > 0) {
+                for (const linkToIssue of issue_links) {
                     core.error(`New critical issue detected. Check it out at: ${linkToIssue}`);
                 }
-                throw new Error(`dependency scan completed: found ${result.new_critical_issues_found} new critical issues`);
+                throw new Error(`dependency scan completed: found ${new_critical_issues_found} new critical issues`);
+            }
+            if (new_dependency_issues_found > 0) {
+                throw new Error(`${new_dependency_issues_found} new dependency issue(s) detected.`);
+            }
+            if (new_secrets_issues_found > 0) {
+                throw new Error(`${new_secrets_issues_found} new secret(s) detected.`);
+            }
+            if (new_sast_issues_found > 0) {
+                throw new Error(`${new_sast_issues_found} new SAST issue(s) detected.`);
             }
             core.info('==== scan is completed, no new critical issues found ====');
         } while (!scanIsCompleted);
