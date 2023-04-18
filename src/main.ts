@@ -35,6 +35,11 @@ async function run(): Promise<void> {
 				title: github.context.payload?.pull_request?.title,
 				url: github.context.payload?.pull_request?.html_url,
 			},
+			// user config
+			fail_on_dependency_scan: failOnDependencyScan,
+			fail_on_sast_scan: failOnSastScan,
+			fail_on_secrets_scan: failOnSecretsScan,
+			from_severity: fromSeverity,
 		};
 
 		const scanId = await startScan(secretKey, startScanPayload);
