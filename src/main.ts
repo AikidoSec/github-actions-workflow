@@ -35,6 +35,7 @@ async function run(): Promise<void> {
 				title: github.context.payload?.pull_request?.title,
 				url: github.context.payload?.pull_request?.html_url,
 			},
+			is_pull_request: github.context.eventName === 'pull_request',
 			// user config
 			fail_on_dependency_scan: failOnDependencyScan,
 			fail_on_sast_scan: failOnSastScan,
