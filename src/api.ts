@@ -7,9 +7,12 @@ type StartScanResponse = { scan_id: number };
 
 type GetScanStatusResponse =
 	| {
+			new_sast_issues_found?: number;
+			new_secrets_issues_found?: number;
+			new_dependency_issues_found?: number;
 			scan_completed: true;
-			new_critical_issues_found: number;
-			issue_links: string[];
+			new_critical_issues_found?: number;
+			issue_links?: string[];
 	  }
 	| {
 			scan_completed: false;
