@@ -117,7 +117,16 @@ async function run() {
     var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y;
     try {
         const secretKey = core.getInput('secret-key');
+        const fromSeverity = core.getInput('from-severity');
         const failOnTimeout = core.getInput('fail-on-timeout');
+        const failOnDependencyScan = core.getInput('fail-on-dependency-scan');
+        const failOnSastScan = core.getInput('fail-on-sast-scan');
+        const failOnSecretsScan = core.getInput('fail-on-secrets-scan');
+        if (!['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'].includes(fromSeverity.toUpperCase())) {
+            core.setOutput('output', STATUS_FAILED);
+            core.info(`Invalid property value for from-severity. Allowed values are: LOW, MEDIUM, HIGH, CRITICAL`);
+            return;
+        }
         const startScanPayload = {
             repository_id: (_a = github.context.payload.repository) === null || _a === void 0 ? void 0 : _a.node_id,
             start_commit_id: ((_d = (_c = (_b = github.context.payload) === null || _b === void 0 ? void 0 : _b.pull_request) === null || _c === void 0 ? void 0 : _c.base) === null || _d === void 0 ? void 0 : _d.sha) || ((_e = github.context.payload) === null || _e === void 0 ? void 0 : _e.before),
@@ -129,6 +138,12 @@ async function run() {
                 title: (_w = (_v = github.context.payload) === null || _v === void 0 ? void 0 : _v.pull_request) === null || _w === void 0 ? void 0 : _w.title,
                 url: (_y = (_x = github.context.payload) === null || _x === void 0 ? void 0 : _x.pull_request) === null || _y === void 0 ? void 0 : _y.html_url,
             },
+            is_pull_request: github.context.eventName === 'pull_request',
+            // user config
+            fail_on_dependency_scan: failOnDependencyScan,
+            fail_on_sast_scan: failOnSastScan,
+            fail_on_secrets_scan: failOnSecretsScan,
+            from_severity: fromSeverity,
         };
         const scanId = await (0, api_1.startScan)(secretKey, startScanPayload);
         core.info(`successfully started a scan with id: "${scanId}"`);
