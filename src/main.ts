@@ -36,6 +36,7 @@ async function run(): Promise<void> {
 				url: github.context.payload?.pull_request?.html_url,
 			},
 			is_pull_request: github.context.eventName === 'pull_request',
+			workflow_version: '1.0.4',
 			// user config
 			fail_on_dependency_scan: failOnDependencyScan,
 			fail_on_sast_scan: failOnSastScan,

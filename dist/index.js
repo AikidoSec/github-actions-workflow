@@ -139,6 +139,7 @@ async function run() {
                 url: (_y = (_x = github.context.payload) === null || _x === void 0 ? void 0 : _x.pull_request) === null || _y === void 0 ? void 0 : _y.html_url,
             },
             is_pull_request: github.context.eventName === 'pull_request',
+            workflow_version: '1.0.4',
             // user config
             fail_on_dependency_scan: failOnDependencyScan,
             fail_on_sast_scan: failOnSastScan,
