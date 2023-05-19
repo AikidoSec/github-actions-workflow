@@ -20,11 +20,11 @@ inputs:
   fail-on-secrets-scan:
     description: 'Whether or not the action should fail when the pull request introduced new secrets are detected'
     required: false
-    default: "true"
+    default: "false"
   fail-on-sast-scan:
     description: 'Whether or not the action should fail when the pull request introduced new SAST issues with critical severity'
     required: false
-    default: "true"
+    default: "false"
 outputs:
   outcome:
     description: |
