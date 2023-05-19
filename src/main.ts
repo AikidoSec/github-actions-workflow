@@ -86,7 +86,7 @@ async function run(): Promise<void> {
 			let moreDetailsText = '';
 			if (github.context.eventName === 'pull_request') {
 				// The featurebranch link is only relevant for PRs
-				moreDetailsText = ` More details at https://app.aikido.dev/featurebranch/scan/${scanId}.`;
+				moreDetailsText = ` More details at https://app.aikido.dev/featurebranch/scan/${scanId}`;
 			}
 
 			const {

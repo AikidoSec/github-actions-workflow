@@ -174,7 +174,7 @@ async function run() {
             let moreDetailsText = '';
             if (github.context.eventName === 'pull_request') {
                 // The featurebranch link is only relevant for PRs
-                moreDetailsText = ` More details at https://app.aikido.dev/featurebranch/scan/${scanId}.`;
+                moreDetailsText = ` More details at https://app.aikido.dev/featurebranch/scan/${scanId}`;
             }
             const { new_critical_issues_found = 0, issue_links = [], new_dependency_issues_found = 0, new_secrets_issues_found = 0, new_sast_issues_found = 0, } = result;
             if (new_critical_issues_found > 0) {
