@@ -18,77 +18,30 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v2
 
       - name: Detect new vulnerabilities
         uses: AikidoSec/github-actions-workflow@v1.0.4
         with:
             secret-key: ${{ secrets.AIKIDO_SECRET_KEY }}
+            fail-on-timeout: false
+            fail-on-dependency-scan: true
+            fail-on-sast-scan: false
+            fail-on-secrets-scan: false
+            from-severity: 'CRITICAL'
 ```
 
 The action has 3 possible outcomes: 
-- 'SUCCEEDED': the scan was completed successfully and we did not encounter any new critical issues
-- 'FAILED': the scan was completed successfully, but we found new critical issues
-- 'TIMED_OUT': the scan did not complete before the set timeout. In this case we won't let the action fail, but we do return this special case to not block your pipeline.
+- `SUCCEEDED`: the scan was completed successfully and we did not encounter any new critical issues
+- `FAILED`: the scan was completed successfully, but we found new critical issues
+- `TIMED_OUT`: the scan did not complete before the set timeout. In this case we won't let the action fail, but we do return this special case to not block your pipeline.
 
-By default, the action fails if the scan did not complete within 2 minutes. You can control this behaviour by setting the `fail-on-timeout` parameter to false for the action, like so: 
-
-```yaml
-name: My Github action
-on:
-  pull_request:
-    branches:
-      - '*'
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Detect new vulnerabilities
-        uses: AikidoSec/github-actions-workflow@v1.0.4
-        with:
-            secret-key: ${{ secrets.AIKIDO_SECRET_KEY }}
-            fail-on-timeout: false
-```
-
-Now the action will still shut down after 2 minutes, but it won't fail and block your pipeline. You can combine this behaviour with other marketplace integrations to get notified when the action times out. For example, you can send a slack notification, but only when the Aikido action timed out:
-
-```yaml
-name: My Github action
-on:
-  pull_request:
-    branches:
-      - '*'
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Detect new vulnerabilities
-        uses: AikidoSec/github-actions-workflow@v1.0.4
-        id: aikido_vulnerabilities
-        with:
-            secret-key: ${{ secrets.AIKIDO_SECRET_KEY }}
-            fail-on-timeout: false
-    
-      - name: Send Slack message in case Aikido scanner timed out
-        uses: slackapi/slack-github-action@v1.23.0
-        if: steps.aikido_vulnerabilities.outputs.outcome === 'TIMED_OUT'
-        with:
-            payload: |
-            {
-                "key": "value",
-                "foo": "bar"
-            }
-        env:
-            SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-```
+Optional fields:
+- `fail-on-timeout`: Determines wether the workflow should respond with `FAILED` in case the scans timed out after 2 minutes.
+- `fail-on-dependency-scan`: Determines wether Aikido should validate on dependency scans.
+- `fail-on-sast-scan`: Determines wether Aikido should validate on SAST scans.
+- `fail-on-secrets-scan`: Determines wether Aikido should validate on secrets scans.
+- `from-severity`: Determines on which (minimum) severity Aikido should respond with `FAILED`. This value can be one of `LOW`, `MEDIUM`, `HIGH`, `CRITICAL`.
 
 ## Contributing
 
