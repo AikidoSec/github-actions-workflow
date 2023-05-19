@@ -7,9 +7,12 @@ type StartScanResponse = { scan_id: number };
 
 type GetScanStatusResponse =
 	| {
+			new_sast_issues_found?: number;
+			new_secrets_issues_found?: number;
+			new_dependency_issues_found?: number;
 			scan_completed: true;
-			new_critical_issues_found: number;
-			issue_links: string[];
+			new_critical_issues_found?: number;
+			issue_links?: string[];
 	  }
 	| {
 			scan_completed: false;
@@ -30,10 +33,10 @@ export const startScan = async (secret: string, payload: Object): Promise<number
 			);
 		}
 
-		throw new Error(`start scan failed: an unexpected error occurred whilst starting the scan`)
+		throw new Error(`start scan failed: an unexpected error occurred whilst starting the scan`);
 	}
 
-	if (response === undefined) throw new Error(`start scan failed: did not get a response`)
+	if (response === undefined) throw new Error(`start scan failed: did not get a response`);
 
 	if (response.statusCode !== 200) {
 		throw new Error(`start scan failed: unable to start scan: ${JSON.stringify(response.result ?? {})}`);

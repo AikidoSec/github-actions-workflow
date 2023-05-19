@@ -11,7 +11,17 @@ const STATUS_TIMED_OUT = 'TIMED_OUT';
 async function run(): Promise<void> {
 	try {
 		const secretKey: string = core.getInput('secret-key');
+		const fromSeverity: string = core.getInput('from-severity');
 		const failOnTimeout: string = core.getInput('fail-on-timeout');
+		const failOnDependencyScan: string = core.getInput('fail-on-dependency-scan');
+		const failOnSastScan: string = core.getInput('fail-on-sast-scan');
+		const failOnSecretsScan: string = core.getInput('fail-on-secrets-scan');
+
+		if (!['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'].includes(fromSeverity.toUpperCase())) {
+			core.setOutput('output', STATUS_FAILED);
+			core.info(`Invalid property value for from-severity. Allowed values are: LOW, MEDIUM, HIGH, CRITICAL`);
+			return;
+		}
 
 		const startScanPayload = {
 			repository_id: github.context.payload.repository?.node_id,
@@ -25,6 +35,13 @@ async function run(): Promise<void> {
 				title: github.context.payload?.pull_request?.title,
 				url: github.context.payload?.pull_request?.html_url,
 			},
+			is_pull_request: github.context.eventName === 'pull_request',
+			workflow_version: '1.0.4',
+			// user config
+			fail_on_dependency_scan: failOnDependencyScan,
+			fail_on_sast_scan: failOnSastScan,
+			fail_on_secrets_scan: failOnSecretsScan,
+			from_severity: fromSeverity,
 		};
 
 		const scanId = await startScan(secretKey, startScanPayload);
@@ -66,14 +83,30 @@ async function run(): Promise<void> {
 
 			scanIsCompleted = true;
 
-			if (result.new_critical_issues_found > 0) {
-				for (const linkToIssue of result.issue_links) {
+			const {
+				new_critical_issues_found = 0,
+				issue_links = [],
+				new_dependency_issues_found = 0,
+				new_secrets_issues_found = 0,
+				new_sast_issues_found = 0,
+			} = result;
+
+			if (new_critical_issues_found > 0) {
+				for (const linkToIssue of issue_links) {
 					core.error(`New critical issue detected. Check it out at: ${linkToIssue}`);
 				}
 
-				throw new Error(
-					`dependency scan completed: found ${result.new_critical_issues_found} new critical issues`
-				);
+				throw new Error(`dependency scan completed: found ${new_critical_issues_found} new critical issues`);
+			}
+
+			if (new_dependency_issues_found > 0) {
+				throw new Error(`${new_dependency_issues_found} new dependency issue(s) detected.`);
+			}
+			if (new_secrets_issues_found > 0) {
+				throw new Error(`${new_secrets_issues_found} new secret(s) detected.`);
+			}
+			if (new_sast_issues_found > 0) {
+				throw new Error(`${new_sast_issues_found} new SAST issue(s) detected.`);
 			}
 
 			core.info('==== scan is completed, no new critical issues found ====');

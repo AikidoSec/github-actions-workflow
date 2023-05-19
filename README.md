@@ -21,7 +21,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Detect new vulnerabilities
-        uses: AikidoSec/github-actions-workflow@v1.0.3
+        uses: AikidoSec/github-actions-workflow@v1.0.4
         with:
             secret-key: ${{ secrets.AIKIDO_SECRET_KEY }}
 ```
@@ -48,7 +48,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Detect new vulnerabilities
-        uses: AikidoSec/github-actions-workflow@v1.0.3
+        uses: AikidoSec/github-actions-workflow@v1.0.4
         with:
             secret-key: ${{ secrets.AIKIDO_SECRET_KEY }}
             fail-on-timeout: false
@@ -71,7 +71,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Detect new vulnerabilities
-        uses: AikidoSec/github-actions-workflow@v1.0.3
+        uses: AikidoSec/github-actions-workflow@v1.0.4
         id: aikido_vulnerabilities
         with:
             secret-key: ${{ secrets.AIKIDO_SECRET_KEY }}
