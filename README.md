@@ -39,8 +39,8 @@ The action has 3 possible outcomes:
 Optional fields:
 - `fail-on-timeout`: Determines wether the workflow should respond with `FAILED` in case the scans timed out after 2 minutes.
 - `fail-on-dependency-scan`: Determines wether Aikido should validate on dependency scans.
-- `fail-on-sast-scan`: Determines wether Aikido should validate on SAST scans.
-- `fail-on-secrets-scan`: Determines wether Aikido should validate on secrets scans.
+- `fail-on-sast-scan`: Determines wether Aikido should validate on SAST scans. This is available in all [paid plans](https://www.aikido.dev/pricing)
+- `fail-on-secrets-scan`: Determines wether Aikido should validate on secrets scans. This is available in all [paid plans](https://www.aikido.dev/pricing)
 - `from-severity`: Determines on which (minimum) severity Aikido should respond with `FAILED`. This value can be one of `LOW`, `MEDIUM`, `HIGH`, `CRITICAL`.
 
 ## Contributing
