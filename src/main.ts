@@ -11,7 +11,7 @@ const STATUS_TIMED_OUT = 'TIMED_OUT';
 async function run(): Promise<void> {
 	try {
 		const secretKey: string = core.getInput('secret-key');
-		const fromSeverity: string = core.getInput('from-severity');
+		const fromSeverity: string = core.getInput('minimum-severity');
 		const failOnTimeout: string = core.getInput('fail-on-timeout');
 		const failOnDependencyScan: string = core.getInput('fail-on-dependency-scan');
 		const failOnSastScan: string = core.getInput('fail-on-sast-scan');
@@ -19,7 +19,7 @@ async function run(): Promise<void> {
 
 		if (!['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'].includes(fromSeverity.toUpperCase())) {
 			core.setOutput('output', STATUS_FAILED);
-			core.info(`Invalid property value for from-severity. Allowed values are: LOW, MEDIUM, HIGH, CRITICAL`);
+			core.info(`Invalid property value for minimum-severity. Allowed values are: LOW, MEDIUM, HIGH, CRITICAL`);
 			return;
 		}
 

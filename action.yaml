@@ -5,7 +5,7 @@ inputs:
   secret-key:
     description: 'Secret key provided by Aikido'
     required: true
-  from-severity:
+  minimum-severity:
     description: 'Which minimum severity Aikido should detect. Can be one of the following: LOW, MEDIUM, HIGH, CRITICAL'
     required: false
     default: "CRITICAL"
