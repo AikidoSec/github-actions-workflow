@@ -83,6 +83,12 @@ async function run(): Promise<void> {
 
 			scanIsCompleted = true;
 
+			let moreDetailsText = '';
+			if (github.context.eventName === 'pull_request') {
+				// The featurebranch link is only relevant for PRs
+				moreDetailsText = ` More details at https://app.aikido.dev/featurebranch/scan/${scanId}.`;
+			}
+
 			const {
 				new_critical_issues_found = 0,
 				issue_links = [],
@@ -96,7 +102,7 @@ async function run(): Promise<void> {
 					core.error(`New issue detected with severity >=${fromSeverity}. Check it out at: ${linkToIssue}`);
 				}
 
-				throw new Error(`dependency scan completed: found ${new_critical_issues_found} new issues with severity >=${fromSeverity}`);
+				throw new Error(`dependency scan completed: found ${new_critical_issues_found} new issues with severity >=${fromSeverity}.${moreDetailsText}`);
 			}
 
 			if (new_dependency_issues_found > 0) {
@@ -109,7 +115,7 @@ async function run(): Promise<void> {
 				throw new Error(`${new_sast_issues_found} new SAST issue(s) detected.`);
 			}
 
-			core.info(`==== scan is completed, no new issues with severity >=${fromSeverity} found ====`);
+			core.info(`==== scan is completed, no new issues with severity >=${fromSeverity} found.${moreDetailsText} ====`);
 		} while (!scanIsCompleted);
 
 		core.setOutput('outcome', STATUS_SUCCEEDED);
