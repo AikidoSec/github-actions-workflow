@@ -7,7 +7,7 @@ This repository contains an application that can be used in Github action workfl
 This is an example workflow you could use to trigger a scan for each new pull request
 
 ```yaml
-name: My Github action
+name: Aikido Security
 on:
   pull_request:
     branches:
