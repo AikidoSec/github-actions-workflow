@@ -117,14 +117,14 @@ async function run() {
     var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y;
     try {
         const secretKey = core.getInput('secret-key');
-        const fromSeverity = core.getInput('from-severity');
+        const fromSeverity = core.getInput('minimum-severity');
         const failOnTimeout = core.getInput('fail-on-timeout');
         const failOnDependencyScan = core.getInput('fail-on-dependency-scan');
         const failOnSastScan = core.getInput('fail-on-sast-scan');
         const failOnSecretsScan = core.getInput('fail-on-secrets-scan');
         if (!['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'].includes(fromSeverity.toUpperCase())) {
             core.setOutput('output', STATUS_FAILED);
-            core.info(`Invalid property value for from-severity. Allowed values are: LOW, MEDIUM, HIGH, CRITICAL`);
+            core.info(`Invalid property value for minimum-severity. Allowed values are: LOW, MEDIUM, HIGH, CRITICAL`);
             return;
         }
         const startScanPayload = {

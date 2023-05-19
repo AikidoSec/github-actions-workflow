@@ -28,7 +28,7 @@ jobs:
             fail-on-dependency-scan: true
             fail-on-sast-scan: false
             fail-on-secrets-scan: false
-            from-severity: 'CRITICAL'
+            minimum-severity: 'CRITICAL'
 ```
 
 The action has 3 possible outcomes: 
@@ -41,7 +41,7 @@ Optional fields:
 - `fail-on-dependency-scan`: Determines wether Aikido should validate on dependency scans.
 - `fail-on-sast-scan`: Determines wether Aikido should validate on SAST scans. This is available in all [paid plans](https://www.aikido.dev/pricing).
 - `fail-on-secrets-scan`: Determines wether Aikido should validate on secrets scans. This is available in all [paid plans](https://www.aikido.dev/pricing).
-- `from-severity`: Determines on which (minimum) severity Aikido should respond with `FAILED`. This value can be one of `LOW`, `MEDIUM`, `HIGH`, `CRITICAL`.
+- `minimum-severity`: Determines on which (minimum) severity Aikido should respond with `FAILED`. This value can be one of `LOW`, `MEDIUM`, `HIGH`, `CRITICAL`.
 
 ## Contributing
 
