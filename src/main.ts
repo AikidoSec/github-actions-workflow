@@ -93,10 +93,10 @@ async function run(): Promise<void> {
 
 			if (new_critical_issues_found > 0) {
 				for (const linkToIssue of issue_links) {
-					core.error(`New critical issue detected. Check it out at: ${linkToIssue}`);
+					core.error(`New issue detected with severity >=${fromSeverity}. Check it out at: ${linkToIssue}`);
 				}
 
-				throw new Error(`dependency scan completed: found ${new_critical_issues_found} new critical issues`);
+				throw new Error(`dependency scan completed: found ${new_critical_issues_found} new issues with severity >=${fromSeverity}`);
 			}
 
 			if (new_dependency_issues_found > 0) {
@@ -109,7 +109,7 @@ async function run(): Promise<void> {
 				throw new Error(`${new_sast_issues_found} new SAST issue(s) detected.`);
 			}
 
-			core.info('==== scan is completed, no new critical issues found ====');
+			core.info(`==== scan is completed, no new issues with severity >=${fromSeverity} found ====`);
 		} while (!scanIsCompleted);
 
 		core.setOutput('outcome', STATUS_SUCCEEDED);
