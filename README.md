@@ -36,12 +36,15 @@ The action has 3 possible outcomes:
 - `FAILED`: the scan was completed successfully, but we found new critical issues
 - `TIMED_OUT`: the scan did not complete before the set timeout. In this case we won't let the action fail, but we do return this special case to not block your pipeline.
 
+Required fields:
+- `secret-key`: The secret key generated at [CI integrations settings](https://app.aikido.dev/settings/integrations/continuous-integration).
+- `minimum-severity`: Determines on which (minimum) severity Aikido should respond with `FAILED`. This value can be one of `LOW`, `MEDIUM`, `HIGH`, `CRITICAL`.
+
 Optional fields:
 - `fail-on-timeout`: Determines wether the workflow should respond with `FAILED` in case the scans timed out after 2 minutes.
 - `fail-on-dependency-scan`: Determines wether Aikido should block on new dependency issues (CVEs).
 - `fail-on-sast-scan`: Determines wether Aikido should block on new SAST issues. This is available in all [paid plans](https://www.aikido.dev/pricing).
 - `fail-on-secrets-scan`: Determines wether Aikido should block on new secrets found. This is available in all [paid plans](https://www.aikido.dev/pricing).
-- `minimum-severity`: Determines on which (minimum) severity Aikido should respond with `FAILED`. This value can be one of `LOW`, `MEDIUM`, `HIGH`, `CRITICAL`.
 
 ## Contributing
 
