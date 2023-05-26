@@ -27,7 +27,6 @@ jobs:
             fail-on-timeout: false
             fail-on-dependency-scan: true
             fail-on-sast-scan: false
-            fail-on-secrets-scan: false
             minimum-severity: 'CRITICAL'
 ```
 
@@ -44,7 +43,6 @@ Optional fields:
 - `fail-on-timeout`: Determines wether the workflow should respond with `FAILED` in case the scans timed out after 2 minutes.
 - `fail-on-dependency-scan`: Determines wether Aikido should block on new dependency issues (CVEs).
 - `fail-on-sast-scan`: Determines wether Aikido should block on new SAST issues. This is available in all [paid plans](https://www.aikido.dev/pricing).
-- `fail-on-secrets-scan`: Determines wether Aikido should block on new secrets found. This is available in all [paid plans](https://www.aikido.dev/pricing).
 
 ## Contributing
 
