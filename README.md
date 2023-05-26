@@ -1,6 +1,6 @@
 # Aikido Security Github action
 
-This repository contains an application that can be used in Github action workflows. It will trigger a scan in Aikido to make sure no new critical issues are introduced into your application. The free tier plan allows for scanning on dependencies. Other features such as blocking on secrets, SAST or licenses are part of the paid plan.
+This repository contains an application that can be used in Github action workflows. It will trigger a scan in Aikido to make sure no new critical issues are introduced into your application. The free tier plan allows for scanning on dependencies. Other features such as blocking on SAST or license findings are part of the paid plan.
 
 ## Using the action
 
