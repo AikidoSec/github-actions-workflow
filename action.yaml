@@ -17,8 +17,8 @@ inputs:
     description: 'Whether or not the action should fail when the pull request introduced new dependency issues with critical severity'
     required: false
     default: "true"
-  fail-on-secrets-scan:
-    description: 'Whether or not the action should fail when the pull request introduced new secrets are detected'
+  fail-on-iac-scan:
+    description: 'Whether or not the action should fail when the pull request introduced new infrastructure as code issues are detected'
     required: false
     default: "false"
   fail-on-sast-scan:

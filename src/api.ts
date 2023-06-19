@@ -8,14 +8,16 @@ type StartScanResponse = { scan_id: number };
 type GetScanStatusResponse =
 	| {
 			new_sast_issues_found?: number;
-			new_secrets_issues_found?: number;
+			new_iac_issues_found?: number;
 			new_dependency_issues_found?: number;
-			scan_completed: true;
-			new_critical_issues_found?: number;
+			all_scans_completed: true;
+			new_issues_found?: number;
 			issue_links?: string[];
+			diff_url?: string;
+			gate_passed?: boolean;
 	  }
 	| {
-			scan_completed: false;
+			all_scans_completed: false;
 	  };
 
 export const startScan = async (secret: string, payload: Object): Promise<number> => {
