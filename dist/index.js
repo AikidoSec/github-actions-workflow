@@ -174,8 +174,8 @@ async function run() {
             if (result.diff_url) {
                 moreDetailsText = ` More details at ${result.diff_url}`;
             }
-            const { new_issues_found = 0, issue_links = [], new_dependency_issues_found = 0, new_iac_issues_found = 0, new_sast_issues_found = 0, } = result;
-            if (new_issues_found > 0) {
+            const { gate_passed = false, new_issues_found = 0, issue_links = [], new_dependency_issues_found = 0, new_iac_issues_found = 0, new_sast_issues_found = 0, } = result;
+            if (!gate_passed) {
                 for (const linkToIssue of issue_links) {
                     core.error(`New issue detected with severity >=${fromSeverity}. Check it out at: ${linkToIssue}`);
                 }

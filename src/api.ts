@@ -14,6 +14,7 @@ type GetScanStatusResponse =
 			new_issues_found?: number;
 			issue_links?: string[];
 			diff_url?: string;
+			gate_passed?: boolean;
 	  }
 	| {
 			all_scans_completed: false;

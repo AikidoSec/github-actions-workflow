@@ -89,6 +89,7 @@ async function run(): Promise<void> {
 			}
 
 			const {
+				gate_passed = false,
 				new_issues_found = 0,
 				issue_links = [],
 				new_dependency_issues_found = 0,
@@ -96,7 +97,7 @@ async function run(): Promise<void> {
 				new_sast_issues_found = 0,
 			} = result;
 
-			if (new_issues_found > 0) {
+			if (!gate_passed) {
 				for (const linkToIssue of issue_links) {
 					core.error(`New issue detected with severity >=${fromSeverity}. Check it out at: ${linkToIssue}`);
 				}
