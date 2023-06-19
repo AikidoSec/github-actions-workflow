@@ -21,12 +21,13 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Detect new vulnerabilities
-        uses: AikidoSec/github-actions-workflow@v1.0.4
+        uses: AikidoSec/github-actions-workflow@v1.0.5
         with:
             secret-key: ${{ secrets.AIKIDO_SECRET_KEY }}
             fail-on-timeout: false
             fail-on-dependency-scan: true
             fail-on-sast-scan: false
+            fail-on-iac-scan: false
             minimum-severity: 'CRITICAL'
 ```
 
@@ -43,6 +44,7 @@ Optional fields:
 - `fail-on-timeout`: Determines wether the workflow should respond with `FAILED` in case the scans timed out after 2 minutes.
 - `fail-on-dependency-scan`: Determines wether Aikido should block on new dependency issues (CVEs).
 - `fail-on-sast-scan`: Determines wether Aikido should block on new SAST issues. This is available in all [paid plans](https://www.aikido.dev/pricing).
+- `fail-on-iac-scan`: Determines wether Aikido should block on new Infrastructure as Code issues. This is available in all [paid plans](https://www.aikido.dev/pricing).
 
 ## Contributing
 

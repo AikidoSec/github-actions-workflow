@@ -121,30 +121,29 @@ async function run() {
         const failOnTimeout = core.getInput('fail-on-timeout');
         const failOnDependencyScan = core.getInput('fail-on-dependency-scan');
         const failOnSastScan = core.getInput('fail-on-sast-scan');
-        const failOnSecretsScan = core.getInput('fail-on-secrets-scan');
+        const failOnIacScan = core.getInput('fail-on-iac-scan');
         if (!['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'].includes(fromSeverity.toUpperCase())) {
             core.setOutput('output', STATUS_FAILED);
             core.info(`Invalid property value for minimum-severity. Allowed values are: LOW, MEDIUM, HIGH, CRITICAL`);
             return;
         }
         const startScanPayload = {
-            repository_id: (_a = github.context.payload.repository) === null || _a === void 0 ? void 0 : _a.node_id,
-            start_commit_id: ((_d = (_c = (_b = github.context.payload) === null || _b === void 0 ? void 0 : _b.pull_request) === null || _c === void 0 ? void 0 : _c.base) === null || _d === void 0 ? void 0 : _d.sha) || ((_e = github.context.payload) === null || _e === void 0 ? void 0 : _e.before),
-            end_commit_id: ((_h = (_g = (_f = github.context.payload) === null || _f === void 0 ? void 0 : _f.pull_request) === null || _g === void 0 ? void 0 : _g.head) === null || _h === void 0 ? void 0 : _h.sha) || ((_j = github.context.payload) === null || _j === void 0 ? void 0 : _j.after),
-            author: ((_m = (_l = (_k = github.context.payload) === null || _k === void 0 ? void 0 : _k.pull_request) === null || _l === void 0 ? void 0 : _l.user) === null || _m === void 0 ? void 0 : _m.login) ||
-                ((_q = (_p = (_o = github.context.payload) === null || _o === void 0 ? void 0 : _o.head_commit) === null || _p === void 0 ? void 0 : _p.author) === null || _q === void 0 ? void 0 : _q.username),
-            ref: ((_t = (_s = (_r = github.context.payload) === null || _r === void 0 ? void 0 : _r.pull_request) === null || _s === void 0 ? void 0 : _s.head) === null || _t === void 0 ? void 0 : _t.ref) || ((_u = github.context.payload) === null || _u === void 0 ? void 0 : _u.ref),
+            version: '1.0.5',
+            branch_name: ((_c = (_b = (_a = github.context.payload) === null || _a === void 0 ? void 0 : _a.pull_request) === null || _b === void 0 ? void 0 : _b.head) === null || _c === void 0 ? void 0 : _c.ref) || ((_d = github.context.payload) === null || _d === void 0 ? void 0 : _d.ref),
+            repository_id: (_e = github.context.payload.repository) === null || _e === void 0 ? void 0 : _e.node_id,
+            base_commit_id: ((_h = (_g = (_f = github.context.payload) === null || _f === void 0 ? void 0 : _f.pull_request) === null || _g === void 0 ? void 0 : _g.base) === null || _h === void 0 ? void 0 : _h.sha) || ((_j = github.context.payload) === null || _j === void 0 ? void 0 : _j.before),
+            head_commit_id: ((_m = (_l = (_k = github.context.payload) === null || _k === void 0 ? void 0 : _k.pull_request) === null || _l === void 0 ? void 0 : _l.head) === null || _m === void 0 ? void 0 : _m.sha) || ((_o = github.context.payload) === null || _o === void 0 ? void 0 : _o.after),
+            author: ((_r = (_q = (_p = github.context.payload) === null || _p === void 0 ? void 0 : _p.pull_request) === null || _q === void 0 ? void 0 : _q.user) === null || _r === void 0 ? void 0 : _r.login) ||
+                ((_u = (_t = (_s = github.context.payload) === null || _s === void 0 ? void 0 : _s.head_commit) === null || _t === void 0 ? void 0 : _t.author) === null || _u === void 0 ? void 0 : _u.username),
             pull_request_metadata: {
                 title: (_w = (_v = github.context.payload) === null || _v === void 0 ? void 0 : _v.pull_request) === null || _w === void 0 ? void 0 : _w.title,
                 url: (_y = (_x = github.context.payload) === null || _x === void 0 ? void 0 : _x.pull_request) === null || _y === void 0 ? void 0 : _y.html_url,
             },
-            is_pull_request: github.context.eventName === 'pull_request',
-            workflow_version: '1.0.4',
             // user config
             fail_on_dependency_scan: failOnDependencyScan,
             fail_on_sast_scan: failOnSastScan,
-            fail_on_secrets_scan: failOnSecretsScan,
-            from_severity: fromSeverity,
+            fail_on_iac_scan: failOnIacScan,
+            minimum_severity: fromSeverity,
         };
         const scanId = await (0, api_1.startScan)(secretKey, startScanPayload);
         core.info(`successfully started a scan with id: "${scanId}"`);
@@ -154,7 +153,7 @@ async function run() {
         core.info('==== check if scan is completed ====');
         do {
             const result = await getScanCompletionStatus();
-            if (!result.scan_completed) {
+            if (!result.all_scans_completed) {
                 core.info('==== scan is not yet completed, wait a few seconds ====');
                 await (0, time_1.sleep)(5000);
                 const dependencyScanTimeoutReached = (0, time_1.getCurrentUnixTime)() > expirationTimestamp;
@@ -172,25 +171,24 @@ async function run() {
             }
             scanIsCompleted = true;
             let moreDetailsText = '';
-            if (github.context.eventName === 'pull_request') {
-                // The featurebranch link is only relevant for PRs
-                moreDetailsText = ` More details at https://app.aikido.dev/featurebranch/scan/${scanId}`;
+            if (result.diff_url) {
+                moreDetailsText = ` More details at ${result.diff_url}`;
             }
-            const { new_critical_issues_found = 0, issue_links = [], new_dependency_issues_found = 0, new_secrets_issues_found = 0, new_sast_issues_found = 0, } = result;
-            if (new_critical_issues_found > 0) {
+            const { new_issues_found = 0, issue_links = [], new_dependency_issues_found = 0, new_iac_issues_found = 0, new_sast_issues_found = 0, } = result;
+            if (new_issues_found > 0) {
                 for (const linkToIssue of issue_links) {
                     core.error(`New issue detected with severity >=${fromSeverity}. Check it out at: ${linkToIssue}`);
                 }
-                throw new Error(`dependency scan completed: found ${new_critical_issues_found} new issues with severity >=${fromSeverity}.${moreDetailsText}`);
+                throw new Error(`dependency scan completed: found ${new_issues_found} new issues with severity >=${fromSeverity}.${moreDetailsText}`);
             }
             if (new_dependency_issues_found > 0) {
-                throw new Error(`${new_dependency_issues_found} new dependency issue(s) detected.`);
+                throw new Error(`${new_dependency_issues_found} new dependency issue(s) detected.${moreDetailsText}`);
             }
-            if (new_secrets_issues_found > 0) {
-                throw new Error(`${new_secrets_issues_found} new secret(s) detected.`);
+            if (new_iac_issues_found > 0) {
+                throw new Error(`${new_iac_issues_found} new IaC issue(s) detected.${moreDetailsText}`);
             }
             if (new_sast_issues_found > 0) {
-                throw new Error(`${new_sast_issues_found} new SAST issue(s) detected.`);
+                throw new Error(`${new_sast_issues_found} new SAST issue(s) detected.${moreDetailsText}`);
             }
             core.info(`==== scan is completed, no new issues with severity >=${fromSeverity} found.${moreDetailsText} ====`);
         } while (!scanIsCompleted);
