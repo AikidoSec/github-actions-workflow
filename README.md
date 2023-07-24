@@ -29,6 +29,7 @@ jobs:
             fail-on-sast-scan: false
             fail-on-iac-scan: false
             minimum-severity: 'CRITICAL'
+            timeout-seconds: 120
 ```
 
 The action has 3 possible outcomes: 
