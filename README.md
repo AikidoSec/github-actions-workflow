@@ -24,12 +24,12 @@ jobs:
         uses: AikidoSec/github-actions-workflow@v1.0.6
         with:
             secret-key: ${{ secrets.AIKIDO_SECRET_KEY }}
-            fail-on-timeout: false
+            fail-on-timeout: true
             fail-on-dependency-scan: true
             fail-on-sast-scan: false
             fail-on-iac-scan: false
             minimum-severity: 'CRITICAL'
-            timeout-seconds: 120
+            timeout-seconds: 180
 ```
 
 The action has 3 possible outcomes: 
