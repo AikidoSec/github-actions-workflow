@@ -16,6 +16,7 @@ async function run(): Promise<void> {
 		const failOnDependencyScan: string = core.getInput('fail-on-dependency-scan');
 		const failOnSastScan: string = core.getInput('fail-on-sast-scan');
 		const failOnIacScan: string = core.getInput('fail-on-iac-scan');
+		const timeoutInSeconds = parseTimeoutDuration(core.getInput('timeout-seconds'));
 
 		if (!['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'].includes(fromSeverity.toUpperCase())) {
 			core.setOutput('output', STATUS_FAILED);
@@ -50,7 +51,7 @@ async function run(): Promise<void> {
 
 		const getScanCompletionStatus = getScanStatus(secretKey, scanId);
 
-		const expirationTimestamp = getCurrentUnixTime() + 120 * 1000; // 2 minutes from now
+		const expirationTimestamp = getCurrentUnixTime() + timeoutInSeconds * 1000;
 
 		let scanIsCompleted = false;
 
@@ -122,6 +123,18 @@ async function run(): Promise<void> {
 	} catch (error) {
 		core.setOutput('outcome', STATUS_FAILED);
 		if (error instanceof Error) core.setFailed(error.message);
+	}
+}
+
+function parseTimeoutDuration(rawTimeoutInSeconds: string): number {
+	if (rawTimeoutInSeconds === '') return 120;
+
+	try {
+		return parseInt(rawTimeoutInSeconds, 10);
+	} catch (error) {
+		throw new Error(
+			`Invalid timeout provided. The provided timeout should be a valid number, but got: "${rawTimeoutInSeconds}"`
+		);
 	}
 }
 
