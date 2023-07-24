@@ -25,6 +25,10 @@ inputs:
     description: 'Whether or not the action should fail when the pull request introduced new SAST issues with critical severity'
     required: false
     default: "false"
+  timeout-seconds:
+    description: 'Provide a number of seconds the action will wait for scans to complete.'
+    required: false
+    default: "120"
 outputs:
   outcome:
     description: |
