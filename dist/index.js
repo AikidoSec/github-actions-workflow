@@ -122,6 +122,7 @@ async function run() {
         const failOnDependencyScan = core.getInput('fail-on-dependency-scan');
         const failOnSastScan = core.getInput('fail-on-sast-scan');
         const failOnIacScan = core.getInput('fail-on-iac-scan');
+        const timeoutInSeconds = parseTimeoutDuration(core.getInput('timeout-seconds'));
         if (!['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'].includes(fromSeverity.toUpperCase())) {
             core.setOutput('output', STATUS_FAILED);
             core.info(`Invalid property value for minimum-severity. Allowed values are: LOW, MEDIUM, HIGH, CRITICAL`);
@@ -148,7 +149,7 @@ async function run() {
         const scanId = await (0, api_1.startScan)(secretKey, startScanPayload);
         core.info(`successfully started a scan with id: "${scanId}"`);
         const getScanCompletionStatus = (0, api_1.getScanStatus)(secretKey, scanId);
-        const expirationTimestamp = (0, time_1.getCurrentUnixTime)() + 120 * 1000; // 2 minutes from now
+        const expirationTimestamp = (0, time_1.getCurrentUnixTime)() + timeoutInSeconds * 1000;
         let scanIsCompleted = false;
         core.info('==== check if scan is completed ====');
         do {
@@ -198,6 +199,16 @@ async function run() {
         core.setOutput('outcome', STATUS_FAILED);
         if (error instanceof Error)
             core.setFailed(error.message);
+    }
+}
+function parseTimeoutDuration(rawTimeoutInSeconds) {
+    if (rawTimeoutInSeconds === '')
+        return 120;
+    try {
+        return parseInt(rawTimeoutInSeconds, 10);
+    }
+    catch (error) {
+        throw new Error(`Invalid timeout provided. The provided timeout should be a valid number, but got: "${rawTimeoutInSeconds}"`);
     }
 }
 void run();
