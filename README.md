@@ -14,7 +14,7 @@ on:
       - '*'
 
 jobs:
-  test:
+  aikido-security:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
