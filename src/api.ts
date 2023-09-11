@@ -35,6 +35,10 @@ export const startScan = async (secret: string, payload: Object): Promise<number
 			);
 		}
 
+		if (error instanceof httpClient.HttpClientError && error.statusCode === 402) {
+			throw new Error(error.result.reason_phrase);
+		}
+
 		throw new Error(`start scan failed: an unexpected error occurred whilst starting the scan`);
 	}
 
