@@ -30,6 +30,8 @@ jobs:
             fail-on-iac-scan: false
             minimum-severity: 'CRITICAL'
             timeout-seconds: 180
+            post-scan-status-comment: true
+            github-token: ${{ secrets.GITHUB_TOKEN }}
 ```
 
 The action has 3 possible outcomes: 
@@ -46,6 +48,8 @@ Optional fields:
 - `fail-on-dependency-scan`: Determines wether Aikido should block on new dependency issues (CVEs).
 - `fail-on-sast-scan`: Determines wether Aikido should block on new SAST issues. This is available in all [paid plans](https://www.aikido.dev/pricing).
 - `fail-on-iac-scan`: Determines wether Aikido should block on new Infrastructure as Code issues. This is available in all [paid plans](https://www.aikido.dev/pricing).
+- `post-scan-status-comment`: Let Aikido post a comment on the PR (when in PR context) with the latest scan status and a link to the scan results.
+- `github-token`: The token to allow Aikido to post the comment mentioned above, this can be the `${{ secrets.GITHUB_TOKEN }}` from the environment if it has write capabilities, or a PAT with specific permissions to read and write comments.
 
 ## Using the action's output
 
