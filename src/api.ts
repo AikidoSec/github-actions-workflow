@@ -1,7 +1,7 @@
 import * as httpClient from '@actions/http-client';
 import { TypedResponse } from '@actions/http-client/lib/interfaces';
 
-const AIKIDO_API_URL = 'ttps://78e6-81-83-30-43.ngrok-free.app';
+const AIKIDO_API_URL = 'https://app.aikido.dev';
 
 type StartScanResponse = { scan_id: number };
 

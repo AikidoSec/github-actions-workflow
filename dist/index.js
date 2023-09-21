@@ -32,7 +32,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getScanStatus = exports.startScan = void 0;
 const httpClient = __importStar(__nccwpck_require__(6255));
-const AIKIDO_API_URL = 'ttps://78e6-81-83-30-43.ngrok-free.app';
+const AIKIDO_API_URL = 'https://app.aikido.dev';
 const startScan = async (secret, payload) => {
     var _a, _b;
     const requestClient = new httpClient.HttpClient('ci-github-actions');
