@@ -3,6 +3,7 @@ import * as github from '@actions/github';
 
 import { getScanStatus, startScan } from './api';
 import { getCurrentUnixTime, sleep } from './time';
+import { postScanStatusMessage } from './postMessage';
 
 const STATUS_FAILED = 'FAILED';
 const STATUS_SUCCEEDED = 'SUCCEEDED';
@@ -17,6 +18,7 @@ async function run(): Promise<void> {
 		const failOnSastScan: string = core.getInput('fail-on-sast-scan');
 		const failOnIacScan: string = core.getInput('fail-on-iac-scan');
 		const timeoutInSeconds = parseTimeoutDuration(core.getInput('timeout-seconds'));
+		const postScanStatusAsComment = core.getInput('post-scan-status-comment');
 
 		if (!['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'].includes(fromSeverity.toUpperCase())) {
 			core.setOutput('output', STATUS_FAILED);
@@ -25,7 +27,7 @@ async function run(): Promise<void> {
 		}
 
 		const startScanPayload = {
-			version: '1.0.5',
+			version: '1.0.6',
 			branch_name: github.context.payload?.pull_request?.head?.ref || github.context.payload?.ref,
 			repository_id: github.context.payload.repository?.node_id,
 			base_commit_id: github.context.payload?.pull_request?.base?.sha || github.context.payload?.before,
@@ -87,6 +89,10 @@ async function run(): Promise<void> {
 			let moreDetailsText = '';
 			if (result.diff_url) {
 				moreDetailsText = ` More details at ${result.diff_url}`;
+			}
+
+			if (postScanStatusAsComment === 'true' && !!result.outcome?.human_readable_message) {
+				await postScanStatusMessage(result.outcome?.human_readable_message);
 			}
 			
 			core.setOutput('scanResultUrl', result.diff_url)

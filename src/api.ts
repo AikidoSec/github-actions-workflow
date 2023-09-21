@@ -1,11 +1,11 @@
 import * as httpClient from '@actions/http-client';
 import { TypedResponse } from '@actions/http-client/lib/interfaces';
 
-const AIKIDO_API_URL = 'https://app.aikido.dev';
+const AIKIDO_API_URL = 'ttps://78e6-81-83-30-43.ngrok-free.app';
 
 type StartScanResponse = { scan_id: number };
 
-type GetScanStatusResponse =
+export type GetScanStatusResponse =
 	| {
 			new_sast_issues_found?: number;
 			new_iac_issues_found?: number;
@@ -15,6 +15,9 @@ type GetScanStatusResponse =
 			issue_links?: string[];
 			diff_url?: string;
 			gate_passed?: boolean;
+			outcome?: {
+				human_readable_message: string
+			}
 	  }
 	| {
 			all_scans_completed: false;

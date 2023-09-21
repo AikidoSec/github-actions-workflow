@@ -29,6 +29,14 @@ inputs:
     description: 'Provide a number of seconds the action will wait for scans to complete.'
     required: false
     default: "120"
+  post-scan-status-comment:
+    description: 'Let Aikido post a comment on the PR with a summary of the status, this comment will be updated for each scan.'
+    required: false
+    default: "false"
+  github-token:
+    description: 'A token that the action can use to post the status comment, this can be the default GITHUB_TOKEN from the environment with permissions to list and post comments, or a custom PAT.'
+    required: false
+    default: ""
 outputs:
   outcome:
     description: |
