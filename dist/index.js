@@ -258,12 +258,12 @@ const postScanStatusMessage = async (messageBody) => {
     var _a, _b;
     const githubToken = core.getInput('github-token');
     if (!githubToken || githubToken === '') {
-        core.error("unable to post scan status: missing github-token input parameter");
+        core.error('unable to post scan status: missing github-token input parameter');
         return;
     }
     const context = github.context;
     if (context.payload.pull_request == null) {
-        core.error("unable to post scan status: action is not run in a pull request context");
+        core.error('unable to post scan status: action is not run in a pull request context');
         return;
     }
     const pullRequestNumber = context.payload.pull_request.number;
@@ -271,7 +271,7 @@ const postScanStatusMessage = async (messageBody) => {
     const { data: comments } = await octokit.rest.issues.listComments({
         owner: context.repo.owner,
         repo: context.repo.repo,
-        issue_number: pullRequestNumber
+        issue_number: pullRequestNumber,
     });
     let intialBotComment = undefined;
     for (const comment of comments) {
@@ -288,7 +288,7 @@ const postScanStatusMessage = async (messageBody) => {
         await octokit.rest.issues.createComment({
             ...context.repo,
             issue_number: pullRequestNumber,
-            body: messageBody
+            body: messageBody,
         });
         return;
     }

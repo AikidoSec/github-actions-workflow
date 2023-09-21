@@ -16,8 +16,8 @@ export type GetScanStatusResponse =
 			diff_url?: string;
 			gate_passed?: boolean;
 			outcome?: {
-				human_readable_message: string
-			}
+				human_readable_message: string;
+			};
 	  }
 	| {
 			all_scans_completed: false;

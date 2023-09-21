@@ -94,8 +94,8 @@ async function run(): Promise<void> {
 			if (postScanStatusAsComment === 'true' && !!result.outcome?.human_readable_message) {
 				await postScanStatusMessage(result.outcome?.human_readable_message);
 			}
-			
-			core.setOutput('scanResultUrl', result.diff_url)
+
+			core.setOutput('scanResultUrl', result.diff_url);
 
 			const {
 				gate_passed = false,
@@ -111,7 +111,9 @@ async function run(): Promise<void> {
 					core.error(`New issue detected with severity >=${fromSeverity}. Check it out at: ${linkToIssue}`);
 				}
 
-				throw new Error(`dependency scan completed: found ${new_issues_found} new issues with severity >=${fromSeverity}.${moreDetailsText}`);
+				throw new Error(
+					`dependency scan completed: found ${new_issues_found} new issues with severity >=${fromSeverity}.${moreDetailsText}`
+				);
 			}
 
 			if (new_dependency_issues_found > 0) {
@@ -124,7 +126,9 @@ async function run(): Promise<void> {
 				throw new Error(`${new_sast_issues_found} new SAST issue(s) detected.${moreDetailsText}`);
 			}
 
-			core.info(`==== scan is completed, no new issues with severity >=${fromSeverity} found.${moreDetailsText} ====`);
+			core.info(
+				`==== scan is completed, no new issues with severity >=${fromSeverity} found.${moreDetailsText} ====`
+			);
 		} while (!scanIsCompleted);
 
 		core.setOutput('outcome', STATUS_SUCCEEDED);
