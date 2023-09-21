@@ -1,16 +1,32 @@
 name: Test action
 on:
   pull_request:
-  push:
     branches:
-      - main
+        - '*'
 
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
       - name: Test action on current repository
+        id: scan
         uses: ./
         with:
           secret-key: ${{ secrets.AIKIDO_SECRET_KEY }}
+          minimum-severity: 'MEDIUM'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Add comment to PR
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: 'Aikido scan completed: [see results](${{steps.scan.outputs.scanResultUrl}})'
+            })
+

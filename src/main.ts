@@ -88,6 +88,8 @@ async function run(): Promise<void> {
 			if (result.diff_url) {
 				moreDetailsText = ` More details at ${result.diff_url}`;
 			}
+			
+			core.setOutput('scanResultUrl', result.diff_url)
 
 			const {
 				gate_passed = false,
