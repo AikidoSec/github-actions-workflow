@@ -27,7 +27,7 @@ async function run(): Promise<void> {
 		}
 
 		const startScanPayload = {
-			version: '1.0.6',
+			version: '1.0.5',
 			branch_name: github.context.payload?.pull_request?.head?.ref || github.context.payload?.ref,
 			repository_id: github.context.payload.repository?.node_id,
 			base_commit_id: github.context.payload?.pull_request?.base?.sha || github.context.payload?.before,

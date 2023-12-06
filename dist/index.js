@@ -131,7 +131,7 @@ async function run() {
             return;
         }
         const startScanPayload = {
-            version: '1.0.6',
+            version: '1.0.5',
             branch_name: ((_c = (_b = (_a = github.context.payload) === null || _a === void 0 ? void 0 : _a.pull_request) === null || _b === void 0 ? void 0 : _b.head) === null || _c === void 0 ? void 0 : _c.ref) || ((_d = github.context.payload) === null || _d === void 0 ? void 0 : _d.ref),
             repository_id: (_e = github.context.payload.repository) === null || _e === void 0 ? void 0 : _e.node_id,
             base_commit_id: ((_h = (_g = (_f = github.context.payload) === null || _f === void 0 ? void 0 : _f.pull_request) === null || _g === void 0 ? void 0 : _g.base) === null || _h === void 0 ? void 0 : _h.sha) || ((_j = github.context.payload) === null || _j === void 0 ? void 0 : _j.before),
