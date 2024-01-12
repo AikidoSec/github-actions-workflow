@@ -3,6 +3,7 @@ import * as github from '@actions/github';
 
 import { getScanStatus, startScan } from './api';
 import { getCurrentUnixTime, sleep } from './time';
+import { postScanStatusMessage } from './postMessage';
 
 const STATUS_FAILED = 'FAILED';
 const STATUS_SUCCEEDED = 'SUCCEEDED';
@@ -17,6 +18,7 @@ async function run(): Promise<void> {
 		const failOnSastScan: string = core.getInput('fail-on-sast-scan');
 		const failOnIacScan: string = core.getInput('fail-on-iac-scan');
 		const timeoutInSeconds = parseTimeoutDuration(core.getInput('timeout-seconds'));
+		const postScanStatusAsComment = core.getInput('post-scan-status-comment');
 
 		if (!['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'].includes(fromSeverity.toUpperCase())) {
 			core.setOutput('output', STATUS_FAILED);
@@ -89,6 +91,12 @@ async function run(): Promise<void> {
 				moreDetailsText = ` More details at ${result.diff_url}`;
 			}
 
+			if (postScanStatusAsComment === 'true' && !!result.outcome?.human_readable_message) {
+				await postScanStatusMessage(result.outcome?.human_readable_message);
+			}
+
+			core.setOutput('scanResultUrl', result.diff_url);
+
 			const {
 				gate_passed = false,
 				new_issues_found = 0,
@@ -103,7 +111,9 @@ async function run(): Promise<void> {
 					core.error(`New issue detected with severity >=${fromSeverity}. Check it out at: ${linkToIssue}`);
 				}
 
-				throw new Error(`dependency scan completed: found ${new_issues_found} new issues with severity >=${fromSeverity}.${moreDetailsText}`);
+				throw new Error(
+					`dependency scan completed: found ${new_issues_found} new issues with severity >=${fromSeverity}.${moreDetailsText}`
+				);
 			}
 
 			if (new_dependency_issues_found > 0) {
@@ -116,7 +126,9 @@ async function run(): Promise<void> {
 				throw new Error(`${new_sast_issues_found} new SAST issue(s) detected.${moreDetailsText}`);
 			}
 
-			core.info(`==== scan is completed, no new issues with severity >=${fromSeverity} found.${moreDetailsText} ====`);
+			core.info(
+				`==== scan is completed, no new issues with severity >=${fromSeverity} found.${moreDetailsText} ====`
+			);
 		} while (!scanIsCompleted);
 
 		core.setOutput('outcome', STATUS_SUCCEEDED);

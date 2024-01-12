@@ -5,7 +5,7 @@ const AIKIDO_API_URL = 'https://app.aikido.dev';
 
 type StartScanResponse = { scan_id: number };
 
-type GetScanStatusResponse =
+export type GetScanStatusResponse =
 	| {
 			new_sast_issues_found?: number;
 			new_iac_issues_found?: number;
@@ -15,6 +15,9 @@ type GetScanStatusResponse =
 			issue_links?: string[];
 			diff_url?: string;
 			gate_passed?: boolean;
+			outcome?: {
+				human_readable_message: string;
+			};
 	  }
 	| {
 			all_scans_completed: false;

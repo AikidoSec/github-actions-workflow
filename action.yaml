@@ -29,12 +29,22 @@ inputs:
     description: 'Provide a number of seconds the action will wait for scans to complete.'
     required: false
     default: "120"
+  post-scan-status-comment:
+    description: 'Let Aikido post a comment on the PR with a summary of the status, this comment will be updated for each scan.'
+    required: false
+    default: "false"
+  github-token:
+    description: 'A token that the action can use to post the status comment, this can be the default GITHUB_TOKEN from the environment with permissions to list and post comments, or a custom PAT.'
+    required: false
+    default: ""
 outputs:
   outcome:
     description: |
       'The outcome of the scan. This will return `SUCCESS` in case we managed to do a scan and no new critical issues were found.\n
       When we did not get results back in time, within 2 minutes, we will return a `TIMEOUT` status but not let the action fail. 
       In case we did detect a new critical issue, the action will fail and outcome will be `FAILED`'
+  scanResultUrl:
+    description: 'A link to the scan results in Aikido.'
 runs:
   using: 'node16'
   main: 'dist/index.js'
