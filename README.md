@@ -51,45 +51,6 @@ Optional fields:
 - `post-scan-status-comment`: Let Aikido post a comment on the PR (when in PR context) with the latest scan status and a link to the scan results.
 - `github-token`: Optional. If the default `${{ secrets.GITHUB_TOKEN }}` environment token does not have write capabilities, Aikido needs a PAT with specific permissions to read and write comments in a PR.
 
-## Using the action's output
-
-Apart from the outcome, the action also returns a URL to the scan results in Aikido. Just like any other action's output, this url can be used in any messaging you set up afterwards, for example to post a comment on the pull request. Consider the pipeline below:
-
-```yaml
-name: Test action
-on:
-  pull_request:
-    branches:
-        - '*'
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Test action on current repository
-        id: scan
-        uses: ./
-        with:
-          secret-key: ${{ secrets.AIKIDO_SECRET_KEY }}
-          minimum-severity: 'CRITICAL'
-
-      - name: Add comment to PR
-        uses: actions/github-script@v6
-        with:
-          script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: 'Aikido scan completed: [see results](${{steps.scan.outputs.scanResultUrl}})'
-            })
-```
-
-This pipeline runs a scan for all pull requests and then posts a comment on the pull request which includes the link to the scan results in Aikido.
-
-For this to work, you need to make sure that your organization allows workflows to perform operations. You can read more about how to control workflow permissions [here](https://docs.github.com/en/actions/security-guides/automatic-token-authentication#modifying-the-permissions-for-the-github_token).
 
 ## Contributing
 
