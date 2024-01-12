@@ -53,7 +53,7 @@ Optional fields:
 
 ## Using the action's output
 
-Apart from the outcome, the action also returns a URL to the scan results in Aikido. Just like any other action's output, this url can be used in any messaging you set up afterwards, for example to post a comment on the pull request. Consider the pipleine below:
+Apart from the outcome, the action also returns a URL to the scan results in Aikido. Just like any other action's output, this url can be used in any messaging you set up afterwards, for example to post a comment on the pull request. Consider the pipeline below:
 
 ```yaml
 name: Test action
