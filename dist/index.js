@@ -45,6 +45,9 @@ const startScan = async (secret, payload) => {
         if (error instanceof httpClient.HttpClientError && error.statusCode === 401) {
             throw new Error(`Start scan failed. The provided api key is most likely no longer valid and has been rotated or revoked. Visit https://app.aikido.dev/settings/integrations/continuous-integration to generate a new key.`);
         }
+        if (error instanceof httpClient.HttpClientError && (error.statusCode >= 400 || error.statusCode <= 499)) {
+            throw new Error(`start scan failed: ${error.message}`);
+        }
         throw new Error(`start scan failed: an unexpected error occurred whilst starting the scan`);
     }
     if (response === undefined)
