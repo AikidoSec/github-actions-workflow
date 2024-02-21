@@ -47,6 +47,13 @@ async function run(): Promise<void> {
 			minimum_severity: fromSeverity,
 		};
 
+		if(secretKey){
+			const redactedToken = '********************' + secretKey.slice(-4);
+			core.info(`starting a scan with secret key: "${redactedToken}"`);
+		}else{
+			core.info(`secret key not set.`);
+		}
+
 		const scanId = await startScan(secretKey, startScanPayload);
 
 		core.info(`successfully started a scan with id: "${scanId}"`);
