@@ -151,6 +151,13 @@ async function run() {
             fail_on_iac_scan: failOnIacScan,
             minimum_severity: fromSeverity,
         };
+        if (secretKey) {
+            const redactedToken = '********************' + secretKey.slice(-4);
+            core.info(`starting a scan with secret key: "${redactedToken}"`);
+        }
+        else {
+            core.info(`secret key not set.`);
+        }
         const scanId = await (0, api_1.startScan)(secretKey, startScanPayload);
         core.info(`successfully started a scan with id: "${scanId}"`);
         const getScanCompletionStatus = (0, api_1.getScanStatus)(secretKey, scanId);
