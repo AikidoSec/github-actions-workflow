@@ -188,7 +188,17 @@ async function run() {
                 moreDetailsText = ` More details at ${result.diff_url}`;
             }
             if (postScanStatusAsComment === 'true' && !!((_z = result.outcome) === null || _z === void 0 ? void 0 : _z.human_readable_message)) {
-                await (0, postMessage_1.postScanStatusMessage)((_0 = result.outcome) === null || _0 === void 0 ? void 0 : _0.human_readable_message);
+                try {
+                    await (0, postMessage_1.postScanStatusMessage)((_0 = result.outcome) === null || _0 === void 0 ? void 0 : _0.human_readable_message);
+                }
+                catch (error) {
+                    if (error instanceof Error) {
+                        core.info(`unable to post scan status comment due to error: ${error.message}`);
+                    }
+                    else {
+                        core.info(`unable to post scan status comment due to unknown error`);
+                    }
+                }
             }
             core.setOutput('scanResultUrl', result.diff_url);
             const { gate_passed = false, new_issues_found = 0, issue_links = [], new_dependency_issues_found = 0, new_iac_issues_found = 0, new_sast_issues_found = 0, } = result;

@@ -99,7 +99,15 @@ async function run(): Promise<void> {
 			}
 
 			if (postScanStatusAsComment === 'true' && !!result.outcome?.human_readable_message) {
-				await postScanStatusMessage(result.outcome?.human_readable_message);
+				try {
+					await postScanStatusMessage(result.outcome?.human_readable_message);
+				} catch (error) {
+					if (error instanceof Error) {
+						core.info(`unable to post scan status comment due to error: ${error.message}`);
+					} else {
+						core.info(`unable to post scan status comment due to unknown error`);
+					}
+				}
 			}
 
 			core.setOutput('scanResultUrl', result.diff_url);
