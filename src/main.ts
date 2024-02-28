@@ -51,6 +51,13 @@ async function run(): Promise<void> {
 			const redactedToken = '********************' + secretKey.slice(-4);
 			core.info(`starting a scan with secret key: "${redactedToken}"`);
 		}else{
+			const isLikelyDependabotPr = (startScanPayload.branch_name ?? '').starts_with('dependabot/')
+			if (isLikelyDependabotPr) {
+				core.info(`it looks like the action is running on a dependabot PR, this means that secret variables are not available in this context and thus we can not start a scan. Please see: https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/`);
+				core.setOutput('outcome', STATUS_SUCCEEDED);
+				return;
+			}
+
 			core.info(`secret key not set.`);
 		}
 
