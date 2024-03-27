@@ -61,7 +61,7 @@ async function run(): Promise<void> {
 			core.info(`secret key not set.`);
 		}
 
-		if (failOnDependencyScan === 'true' && failOnIacScan === 'true' && failOnSastScan === 'true') {
+		if (failOnDependencyScan === 'false' && failOnIacScan === 'false' && failOnSastScan === 'false') {
 			core.setOutput('output', STATUS_FAILED);
 			core.setFailed(`You must enable at least one of the scans.`);
 			return;
