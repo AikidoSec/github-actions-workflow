@@ -118,7 +118,7 @@ const STATUS_FAILED = 'FAILED';
 const STATUS_SUCCEEDED = 'SUCCEEDED';
 const STATUS_TIMED_OUT = 'TIMED_OUT';
 async function run() {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1;
     try {
         const secretKey = core.getInput('secret-key');
         const fromSeverity = core.getInput('minimum-severity');
@@ -156,7 +156,18 @@ async function run() {
             core.info(`starting a scan with secret key: "${redactedToken}"`);
         }
         else {
+            const isLikelyDependabotPr = ((_z = startScanPayload.branch_name) !== null && _z !== void 0 ? _z : '').starts_with('dependabot/');
+            if (isLikelyDependabotPr) {
+                core.info(`it looks like the action is running on a dependabot PR, this means that secret variables are not available in this context and thus we can not start a scan. Please see: https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/`);
+                core.setOutput('outcome', STATUS_SUCCEEDED);
+                return;
+            }
             core.info(`secret key not set.`);
+        }
+        if (failOnDependencyScan === 'true' && failOnIacScan === 'true' && failOnSastScan === 'true') {
+            core.setOutput('output', STATUS_FAILED);
+            core.setFailed(`You must enable at least one of the scans.`);
+            return;
         }
         const scanId = await (0, api_1.startScan)(secretKey, startScanPayload);
         core.info(`successfully started a scan with id: "${scanId}"`);
@@ -187,9 +198,9 @@ async function run() {
             if (result.diff_url) {
                 moreDetailsText = ` More details at ${result.diff_url}`;
             }
-            if (postScanStatusAsComment === 'true' && !!((_z = result.outcome) === null || _z === void 0 ? void 0 : _z.human_readable_message)) {
+            if (postScanStatusAsComment === 'true' && !!((_0 = result.outcome) === null || _0 === void 0 ? void 0 : _0.human_readable_message)) {
                 try {
-                    await (0, postMessage_1.postScanStatusMessage)((_0 = result.outcome) === null || _0 === void 0 ? void 0 : _0.human_readable_message);
+                    await (0, postMessage_1.postScanStatusMessage)((_1 = result.outcome) === null || _1 === void 0 ? void 0 : _1.human_readable_message);
                 }
                 catch (error) {
                     if (error instanceof Error) {
