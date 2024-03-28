@@ -18,10 +18,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Detect new vulnerabilities
-        uses: AikidoSec/github-actions-workflow@v1.0.9
+        uses: AikidoSec/github-actions-workflow@v1.0.10
         with:
             secret-key: ${{ secrets.AIKIDO_SECRET_KEY }}
             fail-on-timeout: true
