@@ -114,9 +114,11 @@ const github = __importStar(__nccwpck_require__(5438));
 const api_1 = __nccwpck_require__(8947);
 const time_1 = __nccwpck_require__(5597);
 const postMessage_1 = __nccwpck_require__(7965);
+const transformPostScanStatusAsComment_1 = __nccwpck_require__(3654);
 const STATUS_FAILED = 'FAILED';
 const STATUS_SUCCEEDED = 'SUCCEEDED';
 const STATUS_TIMED_OUT = 'TIMED_OUT';
+const ALLOWED_POST_SCAN_STATUS_OPTIONS = ['on', 'off', 'only_if_new_findings'];
 async function run() {
     var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1;
     try {
@@ -127,10 +129,16 @@ async function run() {
         const failOnSastScan = core.getInput('fail-on-sast-scan');
         const failOnIacScan = core.getInput('fail-on-iac-scan');
         const timeoutInSeconds = parseTimeoutDuration(core.getInput('timeout-seconds'));
-        const postScanStatusAsComment = core.getInput('post-scan-status-comment');
+        let postScanStatusAsComment = core.getInput('post-scan-status-comment');
         if (!['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'].includes(fromSeverity.toUpperCase())) {
             core.setOutput('output', STATUS_FAILED);
             core.info(`Invalid property value for minimum-severity. Allowed values are: LOW, MEDIUM, HIGH, CRITICAL`);
+            return;
+        }
+        postScanStatusAsComment = (0, transformPostScanStatusAsComment_1.transformPostScanStatusAsComment)(postScanStatusAsComment);
+        if (!ALLOWED_POST_SCAN_STATUS_OPTIONS.includes(postScanStatusAsComment)) {
+            core.setOutput('ouput', STATUS_FAILED);
+            core.error(`Invalid property value for post-scan-status-comment. Allowed values are: ${ALLOWED_POST_SCAN_STATUS_OPTIONS.join(', ')}`);
             return;
         }
         const startScanPayload = {
@@ -198,9 +206,11 @@ async function run() {
             if (result.diff_url) {
                 moreDetailsText = ` More details at ${result.diff_url}`;
             }
-            if (postScanStatusAsComment === 'true' && !!((_0 = result.outcome) === null || _0 === void 0 ? void 0 : _0.human_readable_message)) {
+            const shouldPostComment = (postScanStatusAsComment === 'on' || postScanStatusAsComment === 'only_if_new_findings');
+            if (shouldPostComment && !!((_0 = result.outcome) === null || _0 === void 0 ? void 0 : _0.human_readable_message)) {
                 try {
-                    await (0, postMessage_1.postScanStatusMessage)((_1 = result.outcome) === null || _1 === void 0 ? void 0 : _1.human_readable_message);
+                    const options = { onlyIfNewFindings: postScanStatusAsComment === 'only_if_new_findings', hasNewFindings: !!result.gate_passed };
+                    await (0, postMessage_1.postScanStatusMessage)((_1 = result.outcome) === null || _1 === void 0 ? void 0 : _1.human_readable_message, options);
                 }
                 catch (error) {
                     if (error instanceof Error) {
@@ -285,7 +295,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.postScanStatusMessage = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
-const postScanStatusMessage = async (messageBody) => {
+const postScanStatusMessage = async (messageBody, options) => {
     var _a, _b;
     const githubToken = core.getInput('github-token');
     if (!githubToken || githubToken === '') {
@@ -314,6 +324,9 @@ const postScanStatusMessage = async (messageBody) => {
         intialBotComment = comment;
         break;
     }
+    // we should only post comment in case of new findings, but there are none: dont create comment
+    if (!intialBotComment && options.onlyIfNewFindings && options.hasNewFindings)
+        return;
     // no initial comment, let's create one!
     if (typeof intialBotComment === 'undefined') {
         await octokit.rest.issues.createComment({
@@ -351,6 +364,25 @@ const getCurrentUnixTime = () => {
     return now.getTime();
 };
 exports.getCurrentUnixTime = getCurrentUnixTime;
+
+
+/***/ }),
+
+/***/ 3654:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.transformPostScanStatusAsComment = void 0;
+const transformPostScanStatusAsComment = (value) => {
+    if (value === 'true')
+        return 'on';
+    if (value === 'false')
+        return 'off';
+    return value;
+};
+exports.transformPostScanStatusAsComment = transformPostScanStatusAsComment;
 
 
 /***/ }),
