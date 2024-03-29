@@ -25,14 +25,14 @@ async function run(): Promise<void> {
 
 		if (!['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'].includes(fromSeverity.toUpperCase())) {
 			core.setOutput('output', STATUS_FAILED);
-			core.info(`Invalid property value for minimum-severity. Allowed values are: LOW, MEDIUM, HIGH, CRITICAL`);
+			core.setFailed(`Invalid property value for minimum-severity. Allowed values are: LOW, MEDIUM, HIGH, CRITICAL`);
 			return;
 		}
 
 		postScanStatusAsComment = transformPostScanStatusAsComment(postScanStatusAsComment);
 		if (!ALLOWED_POST_SCAN_STATUS_OPTIONS.includes(postScanStatusAsComment)) {
 			core.setOutput('ouput', STATUS_FAILED);
-			core.error(`Invalid property value for post-scan-status-comment. Allowed values are: ${ALLOWED_POST_SCAN_STATUS_OPTIONS.join(', ')}`);
+			core.setFailed(`Invalid property value for post-scan-status-comment. Allowed values are: ${ALLOWED_POST_SCAN_STATUS_OPTIONS.join(', ')}`);
 			return;
 		}
 
