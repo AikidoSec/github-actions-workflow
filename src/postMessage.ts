@@ -1,7 +1,9 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
 
-export const postScanStatusMessage = async (messageBody: string): Promise<void> => {
+type TPostScanStatusMessageOptions = { onlyIfNewFindings: boolean, hasNewFindings: boolean }
+
+export const postScanStatusMessage = async (messageBody: string, options: TPostScanStatusMessageOptions): Promise<void> => {
 	const githubToken = core.getInput('github-token');
 	if (!githubToken || githubToken === '') {
 		core.error('unable to post scan status: missing github-token input parameter');
@@ -35,6 +37,9 @@ export const postScanStatusMessage = async (messageBody: string): Promise<void> 
 		intialBotComment = comment;
 		break;
 	}
+
+	// we should only post comment in case of new findings, but there are none: dont create comment
+	if (!intialBotComment && options.onlyIfNewFindings && options.hasNewFindings) return;
 
 	// no initial comment, let's create one!
 	if (typeof intialBotComment === 'undefined') {

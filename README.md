@@ -30,7 +30,7 @@ jobs:
             fail-on-iac-scan: false
             minimum-severity: 'CRITICAL'
             timeout-seconds: 180
-            post-scan-status-comment: false
+            post-scan-status-comment: 'off'
             github-token: ${{ secrets.GITHUB_TOKEN }}
 ```
 

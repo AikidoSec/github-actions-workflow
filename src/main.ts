@@ -4,10 +4,13 @@ import * as github from '@actions/github';
 import { getScanStatus, startScan } from './api';
 import { getCurrentUnixTime, sleep } from './time';
 import { postScanStatusMessage } from './postMessage';
+import { transformPostScanStatusAsComment } from './transformers/transformPostScanStatusAsComment';
 
 const STATUS_FAILED = 'FAILED';
 const STATUS_SUCCEEDED = 'SUCCEEDED';
 const STATUS_TIMED_OUT = 'TIMED_OUT';
+
+const ALLOWED_POST_SCAN_STATUS_OPTIONS = ['on' , 'off' , 'only_if_new_findings'];
 
 async function run(): Promise<void> {
 	try {
@@ -18,11 +21,18 @@ async function run(): Promise<void> {
 		const failOnSastScan: string = core.getInput('fail-on-sast-scan');
 		const failOnIacScan: string = core.getInput('fail-on-iac-scan');
 		const timeoutInSeconds = parseTimeoutDuration(core.getInput('timeout-seconds'));
-		const postScanStatusAsComment = core.getInput('post-scan-status-comment');
+		let postScanStatusAsComment = core.getInput('post-scan-status-comment');
 
 		if (!['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'].includes(fromSeverity.toUpperCase())) {
 			core.setOutput('output', STATUS_FAILED);
 			core.info(`Invalid property value for minimum-severity. Allowed values are: LOW, MEDIUM, HIGH, CRITICAL`);
+			return;
+		}
+
+		postScanStatusAsComment = transformPostScanStatusAsComment(postScanStatusAsComment);
+		if (!ALLOWED_POST_SCAN_STATUS_OPTIONS.includes(postScanStatusAsComment)) {
+			core.setOutput('ouput', STATUS_FAILED);
+			core.error(`Invalid property value for post-scan-status-comment. Allowed values are: ${ALLOWED_POST_SCAN_STATUS_OPTIONS.join(', ')}`);
 			return;
 		}
 
@@ -105,9 +115,11 @@ async function run(): Promise<void> {
 				moreDetailsText = ` More details at ${result.diff_url}`;
 			}
 
-			if (postScanStatusAsComment === 'true' && !!result.outcome?.human_readable_message) {
+			const shouldPostComment = (postScanStatusAsComment === 'on' || postScanStatusAsComment === 'only_if_new_findings');
+			if (shouldPostComment && !!result.outcome?.human_readable_message) {
 				try {
-					await postScanStatusMessage(result.outcome?.human_readable_message);
+					const options = { onlyIfNewFindings: postScanStatusAsComment === 'only_if_new_findings', hasNewFindings: !!result.gate_passed };
+					await postScanStatusMessage(result.outcome?.human_readable_message, options);
 				} catch (error) {
 					if (error instanceof Error) {
 						core.info(`unable to post scan status comment due to error: ${error.message}`);
