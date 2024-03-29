@@ -48,7 +48,7 @@ Optional fields:
 - `fail-on-dependency-scan`: Determines whether Aikido should block on new dependency issues (CVEs).
 - `fail-on-sast-scan`: Determines whether Aikido should block on new SAST issues. This is available in all [paid plans](https://www.aikido.dev/pricing).
 - `fail-on-iac-scan`: Determines whether Aikido should block on new Infrastructure as Code issues. This is available in all [paid plans](https://www.aikido.dev/pricing).
-- `post-scan-status-comment`: Let Aikido post a comment on the PR (when in PR context) with the latest scan status and a link to the scan results.
+- `post-scan-status-comment`: Let Aikido post a comment on the PR (when in PR context) with the latest scan status and a link to the scan results. Value can be one of "on", "off" or "only_if_new_findings". When setting this value to "only_if_new_findings" Aikido will only post a comment once new findings are found, and keep it updated afterwards.
 - `github-token`: Must be set only if you want Aikido to post a comment on the PR. If the default `${{ secrets.GITHUB_TOKEN }}` environment token does not have write capabilities, Aikido needs a PAT with specific permissions to read and write comments in a PR.
 
 
