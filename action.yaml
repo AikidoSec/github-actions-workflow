@@ -33,6 +33,10 @@ inputs:
     description: 'Let Aikido post a comment on the PR with a summary of the status, this comment will be updated for each scan. Can be one of "on", "off" or "only_if_new_findings". When setting this value to "only_if_new_findings" Aikido will only post a comment once new findings are found, and keep it updated afterwards.'
     required: false
     default: "off"
+  post-review-comments:
+    description: 'Let Aikido post inline review comments based on the findings. Can be one of "on", "off".'
+    required: false
+    default: "off"
   github-token:
     description: 'A token that the action can use to post the status comment, this can be the default GITHUB_TOKEN from the environment with permissions to list and post comments, or a custom PAT.'
     required: false
