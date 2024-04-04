@@ -114,13 +114,16 @@ const github = __importStar(__nccwpck_require__(5438));
 const api_1 = __nccwpck_require__(8947);
 const time_1 = __nccwpck_require__(5597);
 const postMessage_1 = __nccwpck_require__(7965);
+const postReviewComment_1 = __nccwpck_require__(6588);
 const transformPostScanStatusAsComment_1 = __nccwpck_require__(3654);
+const transformPostFindingsAsReviewComment_1 = __nccwpck_require__(710);
 const STATUS_FAILED = 'FAILED';
 const STATUS_SUCCEEDED = 'SUCCEEDED';
 const STATUS_TIMED_OUT = 'TIMED_OUT';
 const ALLOWED_POST_SCAN_STATUS_OPTIONS = ['on', 'off', 'only_if_new_findings'];
+const ALLOWED_POST_REVIEW_COMMENTS_OPTIONS = ['on', 'off'];
 async function run() {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2;
     try {
         const secretKey = core.getInput('secret-key');
         const fromSeverity = core.getInput('minimum-severity');
@@ -130,6 +133,7 @@ async function run() {
         const failOnIacScan = core.getInput('fail-on-iac-scan');
         const timeoutInSeconds = parseTimeoutDuration(core.getInput('timeout-seconds'));
         let postScanStatusAsComment = core.getInput('post-scan-status-comment');
+        let postReviewComments = core.getInput('post-review-comments');
         if (!['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'].includes(fromSeverity.toUpperCase())) {
             core.setOutput('output', STATUS_FAILED);
             core.setFailed(`Invalid property value for minimum-severity. Allowed values are: LOW, MEDIUM, HIGH, CRITICAL`);
@@ -139,6 +143,12 @@ async function run() {
         if (!ALLOWED_POST_SCAN_STATUS_OPTIONS.includes(postScanStatusAsComment)) {
             core.setOutput('ouput', STATUS_FAILED);
             core.setFailed(`Invalid property value for post-scan-status-comment. Allowed values are: ${ALLOWED_POST_SCAN_STATUS_OPTIONS.join(', ')}`);
+            return;
+        }
+        postReviewComments = (0, transformPostFindingsAsReviewComment_1.transformPostFindingsAsReviewComment)(postReviewComments);
+        if (!ALLOWED_POST_REVIEW_COMMENTS_OPTIONS.includes(postReviewComments)) {
+            core.setOutput('ouput', STATUS_FAILED);
+            core.setFailed(`Invalid property value for post-review-comments. Allowed values are: ${ALLOWED_POST_SCAN_STATUS_OPTIONS.join(', ')}`);
             return;
         }
         const startScanPayload = {
@@ -218,6 +228,27 @@ async function run() {
                     }
                     else {
                         core.info(`unable to post scan status comment due to unknown error`);
+                    }
+                }
+            }
+            const shouldPostReviewComments = (postReviewComments === 'on');
+            if (shouldPostReviewComments && !!((_2 = result.outcome) === null || _2 === void 0 ? void 0 : _2.human_readable_message)) {
+                try {
+                    const options = {};
+                    //const findings = result.outcome?.findings
+                    // TODO: replace MOCK
+                    const findings = [
+                        { path: 'dist/index.js', line: 1, body: 'Test 1 https://app.aikido.dev/featurebranch/scan/' },
+                        { path: 'dist/index.js', line: 20, body: 'Test 2 https://app.aikido.dev/featurebranch/scan/' }
+                    ];
+                    await (0, postReviewComment_1.postFindingsAsReviewComments)(findings);
+                }
+                catch (error) {
+                    if (error instanceof Error) {
+                        core.info(`unable to post review comments due to error: ${error.message}`);
+                    }
+                    else {
+                        core.info(`unable to post review comments due to unknown error`);
                     }
                 }
             }
@@ -348,6 +379,86 @@ exports.postScanStatusMessage = postScanStatusMessage;
 
 /***/ }),
 
+/***/ 6588:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.postFindingsAsReviewComments = void 0;
+const core = __importStar(__nccwpck_require__(2186));
+const github = __importStar(__nccwpck_require__(5438));
+const postFindingsAsReviewComments = async (findings) => {
+    var _a, _b;
+    const githubToken = core.getInput('github-token');
+    if (!githubToken || githubToken === '') {
+        core.error('unable to post review comments: missing github-token input parameter');
+        return;
+    }
+    const context = github.context;
+    if (context.payload.pull_request == null) {
+        core.error('unable to post review comments: action is not run in a pull request context');
+        return;
+    }
+    if (context.sha == null) {
+        core.error('unable to post review comments: action has no detectable commit.');
+        return;
+    }
+    const pullRequestNumber = context.payload.pull_request.number;
+    const commitId = context.sha;
+    const octokit = github.getOctokit(githubToken);
+    const { data: reviewComments } = await octokit.rest.pulls.listReviewComments({
+        owner: context.repo.owner,
+        repo: context.repo.repo,
+        pull_number: pullRequestNumber
+    });
+    for (const finding of findings) {
+        let existingFinding = undefined;
+        for (const comment of reviewComments) {
+            const isBot = ((_a = comment.user) === null || _a === void 0 ? void 0 : _a.type) === 'Bot';
+            const isAikidoScannerBot = (_b = comment.body) === null || _b === void 0 ? void 0 : _b.toLowerCase().includes('https://app.aikido.dev/featurebranch/scan/');
+            if (!isBot || !isAikidoScannerBot || comment.path != finding.path || comment.line != finding.line || comment.body != finding.body)
+                continue;
+            existingFinding = comment;
+        }
+        if (typeof existingFinding === 'undefined') {
+            await octokit.rest.pulls.createReviewComment({
+                ...context.repo,
+                pull_number: pullRequestNumber,
+                commit_id: commitId,
+                ...finding,
+            });
+        }
+    }
+};
+exports.postFindingsAsReviewComments = postFindingsAsReviewComments;
+
+
+/***/ }),
+
 /***/ 5597:
 /***/ ((__unused_webpack_module, exports) => {
 
@@ -364,6 +475,25 @@ const getCurrentUnixTime = () => {
     return now.getTime();
 };
 exports.getCurrentUnixTime = getCurrentUnixTime;
+
+
+/***/ }),
+
+/***/ 710:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.transformPostFindingsAsReviewComment = void 0;
+const transformPostFindingsAsReviewComment = (value) => {
+    if (value === 'true')
+        return 'on';
+    if (value === 'false')
+        return 'off';
+    return value;
+};
+exports.transformPostFindingsAsReviewComment = transformPostFindingsAsReviewComment;
 
 
 /***/ }),

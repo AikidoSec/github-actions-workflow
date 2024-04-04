@@ -152,7 +152,10 @@ async function run(): Promise<void> {
 					const options = {};
 					//const findings = result.outcome?.findings
 					// TODO: replace MOCK
-					const findings = [{ 'lineNumber': 1 }, { 'lineNumber': 20 }]
+					const findings = [
+						{ path: 'dist/index.js', line: 1, body: 'Test 1 https://app.aikido.dev/featurebranch/scan/' },
+						{ path: 'dist/index.js', line: 20, body: 'Test 2 https://app.aikido.dev/featurebranch/scan/' }
+					]
 					await postFindingsAsReviewComments(findings);
 				} catch (error) {
 					if (error instanceof Error) {
