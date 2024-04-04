@@ -80,7 +80,11 @@ export const postFindingsAsReviewComments = async (findings: TFinding[]): Promis
 			await octokit.rest.pulls.createReviewComment({
 				...context.repo,
 				pull_number: pullRequestNumber,
-				...finding,
+				commit_id: finding.commit_id,
+				path: finding.path,
+				body: finding.body,
+				line: finding.line,
+				...(finding.start_line != finding.line) && { start_line: finding.start_line }
 			});
 		}
 	}
