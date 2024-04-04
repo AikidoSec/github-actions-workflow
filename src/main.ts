@@ -147,7 +147,7 @@ async function run(): Promise<void> {
 			}
 
 			const shouldPostReviewComments = (postReviewComments === 'on');
-			if (shouldPostReviewComments && !!result.outcome?.human_readable_message) {
+			if (shouldPostReviewComments) {
 				try {
 					const options = {};
 					//const findings = result.outcome?.findings
