@@ -239,7 +239,8 @@ async function run() {
                     // TODO: replace MOCK
                     const findings = [
                         { commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e', path: 'dist/index.js', line: 117, body: 'Test 1 https://app.aikido.dev/featurebranch/scan/' },
-                        { commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e', path: 'dist/index.js', line: 120, body: 'Test 2 https://app.aikido.dev/featurebranch/scan/' }
+                        { commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e', path: 'dist/index.js', line: 120, body: 'Test 2 https://app.aikido.dev/featurebranch/scan/' },
+                        { commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e', path: 'dist/index.js', line: 124, body: 'Test 3 https://app.aikido.dev/featurebranch/scan/' }
                     ];
                     await (0, postReviewComment_1.postFindingsAsReviewComments)(findings);
                 }
