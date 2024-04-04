@@ -153,8 +153,8 @@ async function run(): Promise<void> {
 					//const findings = result.outcome?.findings
 					// TODO: replace MOCK
 					const findings = [
-						{ commit_id: '17c772884c94385a17746d84ba5c287220b13583', path: 'dist/index.js', line: 117, body: 'Test 1 https://app.aikido.dev/featurebranch/scan/' },
-						{ commit_id: '17c772884c94385a17746d84ba5c287220b13583', path: 'dist/index.js', line: 120, body: 'Test 2 https://app.aikido.dev/featurebranch/scan/' }
+						{ commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e', path: 'dist/index.js', line: 117, body: 'Test 1 https://app.aikido.dev/featurebranch/scan/' },
+						{ commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e', path: 'dist/index.js', line: 120, body: 'Test 2 https://app.aikido.dev/featurebranch/scan/' }
 					]
 					await postFindingsAsReviewComments(findings);
 				} catch (error) {
