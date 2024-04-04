@@ -1,7 +1,7 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
 
-type TFinding = { commit_id: string, path: string, line: number, body: string }
+type TFinding = { commit_id: string, path: string, line: number, start_line: number, body: string }
 
 const parseUniqueAikidoID = (body: string): string | undefined => {
 	const regex = new RegExp('.*app\.aikido\.dev\/finding\/(.*)\/.*', 'i');
