@@ -237,7 +237,7 @@ async function run() {
                     const options = {};
                     //const findings = result.outcome?.findings
                     // TODO: replace MOCK
-                    // Unique identifief for findings has temporarily been agreed on having a unique Aikido link within the body referencing the unique Aikido finding
+                    // Unique identifier for findings has temporarily been agreed on having a unique Aikido link within the body referencing the unique Aikido finding
                     const findings = [
                         { commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e', path: 'dist/index.js', line: 117, start_line: 117, body: 'Test 1 https://app.aikido.dev/finding/127/' },
                         { commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e', path: 'dist/index.js', line: 120, start_line: 120, body: 'Test 2 https://app.aikido.dev/finding/128/' },
