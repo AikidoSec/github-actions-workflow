@@ -237,10 +237,11 @@ async function run() {
                     const options = {};
                     //const findings = result.outcome?.findings
                     // TODO: replace MOCK
+                    // Unique identifief for findings has temporarily been agreed on having a unique Aikido link within the body referencing the unique Aikido finding
                     const findings = [
-                        { commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e', path: 'dist/index.js', line: 117, body: 'Test 1 https://app.aikido.dev/featurebranch/scan/' },
-                        { commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e', path: 'dist/index.js', line: 120, body: 'Test 2 https://app.aikido.dev/featurebranch/scan/' },
-                        { commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e', path: 'dist/index.js', line: 124, body: 'Test 3 https://app.aikido.dev/featurebranch/scan/' }
+                        { commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e', path: 'dist/index.js', line: 117, body: 'Test 1 https://app.aikido.dev/finding/123/' },
+                        { commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e', path: 'dist/index.js', line: 120, body: 'Test 2 https://app.aikido.dev/finding/124/' },
+                        { commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e', path: 'dist/index.js', line: 124, body: 'Test 3 https://app.aikido.dev/finding/125/' }
                     ];
                     await (0, postReviewComment_1.postFindingsAsReviewComments)(findings);
                 }
@@ -412,6 +413,14 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.postFindingsAsReviewComments = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
+const parseUniqueAikidoID = (body) => {
+    const regex = new RegExp('.*app\.aikido\.dev\/finding\/(.*)\/.*', 'i');
+    const match = regex.exec(body.toLowerCase());
+    if (match == null) {
+        return undefined;
+    }
+    return match[1];
+};
 const postFindingsAsReviewComments = async (findings) => {
     var _a, _b;
     const githubToken = core.getInput('github-token');
@@ -431,12 +440,37 @@ const postFindingsAsReviewComments = async (findings) => {
         repo: context.repo.repo,
         pull_number: pullRequestNumber
     });
+    // Delete review comments that are not in current findings
+    for (const comment of reviewComments) {
+        const isBot = ((_a = comment.user) === null || _a === void 0 ? void 0 : _a.type) === 'Bot';
+        const existingCommentId = parseUniqueAikidoID(comment.body);
+        if (!isBot || existingCommentId === undefined)
+            continue;
+        let matchedFinding = undefined;
+        for (const finding of findings) {
+            const findingId = parseUniqueAikidoID(finding.body);
+            if (findingId != existingCommentId)
+                continue;
+            matchedFinding = finding;
+        }
+        if (typeof matchedFinding === 'undefined') {
+            await octokit.rest.pulls.deleteReviewComment({
+                ...context.repo,
+                pull_number: pullRequestNumber,
+                comment_id: comment.id
+            });
+        }
+    }
+    // Add new review comments
     for (const finding of findings) {
+        const findingId = parseUniqueAikidoID(finding.body);
+        if (findingId === undefined)
+            continue;
         let existingFinding = undefined;
         for (const comment of reviewComments) {
-            const isBot = ((_a = comment.user) === null || _a === void 0 ? void 0 : _a.type) === 'Bot';
-            const isAikidoScannerBot = (_b = comment.body) === null || _b === void 0 ? void 0 : _b.toLowerCase().includes('https://app.aikido.dev/featurebranch/scan/');
-            if (!isBot || !isAikidoScannerBot || comment.commit_id != finding.commit_id, comment.path != finding.path || comment.line != finding.line || comment.body != finding.body)
+            const isBot = ((_b = comment.user) === null || _b === void 0 ? void 0 : _b.type) === 'Bot';
+            const existingCommentId = parseUniqueAikidoID(comment.body);
+            if (!isBot || existingCommentId === undefined || findingId != existingCommentId)
                 continue;
             existingFinding = comment;
         }

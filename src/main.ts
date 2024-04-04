@@ -152,10 +152,11 @@ async function run(): Promise<void> {
 					const options = {};
 					//const findings = result.outcome?.findings
 					// TODO: replace MOCK
+					// Unique identifief for findings has temporarily been agreed on having a unique Aikido link within the body referencing the unique Aikido finding
 					const findings = [
-						{ commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e', path: 'dist/index.js', line: 117, body: 'Test 1 https://app.aikido.dev/featurebranch/scan/' },
-						{ commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e', path: 'dist/index.js', line: 120, body: 'Test 2 https://app.aikido.dev/featurebranch/scan/' },
-						{ commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e', path: 'dist/index.js', line: 124, body: 'Test 3 https://app.aikido.dev/featurebranch/scan/' }
+						{ commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e', path: 'dist/index.js', line: 117, body: 'Test 1 https://app.aikido.dev/finding/123/' },
+						{ commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e', path: 'dist/index.js', line: 120, body: 'Test 2 https://app.aikido.dev/finding/124/' },
+						{ commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e', path: 'dist/index.js', line: 124, body: 'Test 3 https://app.aikido.dev/finding/125/' }
 
 					]
 					await postFindingsAsReviewComments(findings);

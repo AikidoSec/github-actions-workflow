@@ -3,6 +3,15 @@ import * as github from '@actions/github';
 
 type TFinding = { commit_id: string, path: string, line: number, body: string }
 
+const parseUniqueAikidoID = (body: string): string | undefined => {
+	const regex = new RegExp('.*app\.aikido\.dev\/finding\/(.*)\/.*', 'i');
+	const match = regex.exec(body.toLowerCase())
+	if (match == null) {
+		return undefined
+	}
+	return match[1]
+}
+
 export const postFindingsAsReviewComments = async (findings: TFinding[]): Promise<void> => {
 	const githubToken = core.getInput('github-token');
 	if (!githubToken || githubToken === '') {
@@ -26,13 +35,43 @@ export const postFindingsAsReviewComments = async (findings: TFinding[]): Promis
 		pull_number: pullRequestNumber
 	});
 
+	// Delete review comments that are not in current findings
+	for (const comment of reviewComments) {
+		const isBot = comment.user?.type === 'Bot';
+		const existingCommentId = parseUniqueAikidoID(comment.body)
+
+		if (!isBot || existingCommentId === undefined) continue;
+
+		let matchedFinding = undefined
+		for (const finding of findings) {
+			const findingId = parseUniqueAikidoID(finding.body)
+
+			if (findingId != existingCommentId) continue;
+
+			matchedFinding = finding
+		}
+
+		if (typeof matchedFinding === 'undefined') {
+			await octokit.rest.pulls.deleteReviewComment({
+				...context.repo,
+				pull_number: pullRequestNumber,
+				comment_id: comment.id
+			});
+		}
+	}
+
+	// Add new review comments
 	for (const finding of findings) {
+		const findingId = parseUniqueAikidoID(finding.body)
+
+		if (findingId === undefined) continue;
+
 		let existingFinding = undefined
 		for (const comment of reviewComments) {
 			const isBot = comment.user?.type === 'Bot';
-			const isAikidoScannerBot = comment.body?.toLowerCase().includes('https://app.aikido.dev/featurebranch/scan/');
+			const existingCommentId = parseUniqueAikidoID(comment.body)
 
-			if (!isBot || !isAikidoScannerBot || comment.commit_id != finding.commit_id, comment.path != finding.path || comment.line != finding.line || comment.body != finding.body) continue;
+			if (!isBot || existingCommentId === undefined || findingId != existingCommentId) continue;
 
 			existingFinding = comment
 		}
