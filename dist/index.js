@@ -241,7 +241,8 @@ async function run() {
                     const findings = [
                         { commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e', path: 'dist/index.js', line: 117, body: 'Test 1 https://app.aikido.dev/finding/123/' },
                         { commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e', path: 'dist/index.js', line: 120, body: 'Test 2 https://app.aikido.dev/finding/124/' },
-                        { commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e', path: 'dist/index.js', line: 124, body: 'Test 3 https://app.aikido.dev/finding/125/' }
+                        { commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e', path: 'dist/index.js', line: 124, body: 'Test 3 https://app.aikido.dev/finding/125/' },
+                        { commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e', path: 'dist/index.js', line: 124, body: 'Test 4 https://app.aikido.dev/finding/126/' }
                     ];
                     await (0, postReviewComment_1.postFindingsAsReviewComments)(findings);
                 }
