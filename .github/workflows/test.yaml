@@ -18,3 +18,4 @@ jobs:
           minimum-severity: 'MEDIUM'
           github-token: ${{ secrets.GITHUB_TOKEN }}
           post-scan-status-comment: true
+          post-review-comments: true
