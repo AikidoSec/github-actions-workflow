@@ -123,7 +123,7 @@ const STATUS_TIMED_OUT = 'TIMED_OUT';
 const ALLOWED_POST_SCAN_STATUS_OPTIONS = ['on', 'off', 'only_if_new_findings'];
 const ALLOWED_POST_REVIEW_COMMENTS_OPTIONS = ['on', 'off'];
 async function run() {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1;
     try {
         const secretKey = core.getInput('secret-key');
         const fromSeverity = core.getInput('minimum-severity');
@@ -232,14 +232,14 @@ async function run() {
                 }
             }
             const shouldPostReviewComments = (postReviewComments === 'on');
-            if (shouldPostReviewComments && !!((_2 = result.outcome) === null || _2 === void 0 ? void 0 : _2.human_readable_message)) {
+            if (shouldPostReviewComments) {
                 try {
                     const options = {};
                     //const findings = result.outcome?.findings
                     // TODO: replace MOCK
                     const findings = [
-                        { path: 'dist/index.js', line: 1, body: 'Test 1 https://app.aikido.dev/featurebranch/scan/' },
-                        { path: 'dist/index.js', line: 20, body: 'Test 2 https://app.aikido.dev/featurebranch/scan/' }
+                        { commit_id: '17c772884c94385a17746d84ba5c287220b13583', path: 'dist/index.js', line: 117, body: 'Test 1 https://app.aikido.dev/featurebranch/scan/' },
+                        { commit_id: '17c772884c94385a17746d84ba5c287220b13583', path: 'dist/index.js', line: 120, body: 'Test 2 https://app.aikido.dev/featurebranch/scan/' }
                     ];
                     await (0, postReviewComment_1.postFindingsAsReviewComments)(findings);
                 }
@@ -423,12 +423,7 @@ const postFindingsAsReviewComments = async (findings) => {
         core.error('unable to post review comments: action is not run in a pull request context');
         return;
     }
-    if (context.sha == null) {
-        core.error('unable to post review comments: action has no detectable commit.');
-        return;
-    }
     const pullRequestNumber = context.payload.pull_request.number;
-    const commitId = context.sha;
     const octokit = github.getOctokit(githubToken);
     const { data: reviewComments } = await octokit.rest.pulls.listReviewComments({
         owner: context.repo.owner,
@@ -440,7 +435,7 @@ const postFindingsAsReviewComments = async (findings) => {
         for (const comment of reviewComments) {
             const isBot = ((_a = comment.user) === null || _a === void 0 ? void 0 : _a.type) === 'Bot';
             const isAikidoScannerBot = (_b = comment.body) === null || _b === void 0 ? void 0 : _b.toLowerCase().includes('https://app.aikido.dev/featurebranch/scan/');
-            if (!isBot || !isAikidoScannerBot || comment.path != finding.path || comment.line != finding.line || comment.body != finding.body)
+            if (!isBot || !isAikidoScannerBot || comment.commit_id != finding.commit_id, comment.path != finding.path || comment.line != finding.line || comment.body != finding.body)
                 continue;
             existingFinding = comment;
         }
@@ -448,7 +443,6 @@ const postFindingsAsReviewComments = async (findings) => {
             await octokit.rest.pulls.createReviewComment({
                 ...context.repo,
                 pull_number: pullRequestNumber,
-                commit_id: commitId,
                 ...finding,
             });
         }
