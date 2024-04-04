@@ -1,7 +1,7 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
 
-type TFinding = { path: string, line: number, body: string }
+type TFinding = { commit_id: string, path: string, line: number, body: string }
 
 export const postFindingsAsReviewComments = async (findings: TFinding[]): Promise<void> => {
 	const githubToken = core.getInput('github-token');
@@ -16,14 +16,7 @@ export const postFindingsAsReviewComments = async (findings: TFinding[]): Promis
 		return;
 	}
 
-	if (context.sha == null) {
-		core.error('unable to post review comments: action has no detectable commit.');
-		return;
-	}
-
 	const pullRequestNumber = context.payload.pull_request.number;
-	const commitId = context.sha;
-
 
 	const octokit = github.getOctokit(githubToken);
 
@@ -39,7 +32,7 @@ export const postFindingsAsReviewComments = async (findings: TFinding[]): Promis
 			const isBot = comment.user?.type === 'Bot';
 			const isAikidoScannerBot = comment.body?.toLowerCase().includes('https://app.aikido.dev/featurebranch/scan/');
 
-			if (!isBot || !isAikidoScannerBot || comment.path != finding.path || comment.line != finding.line || comment.body != finding.body) continue;
+			if (!isBot || !isAikidoScannerBot || comment.commit_id != finding.commit_id, comment.path != finding.path || comment.line != finding.line || comment.body != finding.body) continue;
 
 			existingFinding = comment
 		}
@@ -48,7 +41,6 @@ export const postFindingsAsReviewComments = async (findings: TFinding[]): Promis
 			await octokit.rest.pulls.createReviewComment({
 				...context.repo,
 				pull_number: pullRequestNumber,
-				commit_id: commitId,
 				...finding,
 			});
 		}
