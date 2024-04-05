@@ -4,12 +4,19 @@ import * as crypto from 'crypto';
 
 type TFinding = { commit_id: string, path: string, line: number, start_line: number, body: string }
 
+// This function is used to check duplicates on new scans & bypass certain edge cases.
+// Commit_id was not added to the hash, because Github will only send over the comments from the current commit.
+// Body was not added to the hash to avoid multiple comments on the same line.
 const parseSnippetHashFromComment = (finding: any): string | undefined => {
 	if (finding.path == null || finding.line == null) return undefined
 
 	return crypto.createHash('sha256').update(`${finding.path}-${finding.line}`).digest('hex');
 }
 
+// Possible edge cases:
+// - Previous finding/comment has moved location in newer commit: Github handles this and passes location within current commit.
+// - New finding on the same line number as a previous finding: Github handles this as the old comment is not present in current commit.
+// - The same finding (previously deleted) is now back. We detect this as a duplicate, so the old conversation is preserved.
 export const postFindingsAsReviewComments = async (findings: TFinding[]): Promise<void> => {
 	const githubToken = core.getInput('github-token');
 	if (!githubToken || githubToken === '') {

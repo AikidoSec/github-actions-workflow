@@ -283,7 +283,7 @@ async function createReviewComments(secretKey, scanId) {
             path: finding.file,
             line: finding.end_line,
             start_line: finding.start_line,
-            body: `**Finding:** ${finding.title}\n**Description:** ${finding.description}\n**Possible remediation:** ${finding.remediation}\n**Details**: [View details](https://app.aikido.dev/featurebranch/scan/${scanId})`
+            body: `${finding.title}\n${finding.description}\n**Remediation:** ${finding.remediation}\n**Details**: [View details](https://app.aikido.dev/featurebranch/scan/${scanId})`
         }));
         if (findings.length > 0) {
             await (0, postReviewComment_1.postFindingsAsReviewComments)(findings);
@@ -431,11 +431,18 @@ exports.postFindingsAsReviewComments = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
 const crypto = __importStar(__nccwpck_require__(6113));
+// This function is used to check duplicates on new scans & bypass certain edge cases.
+// Commit_id was not added to the hash, because Github will only send over the comments from the current commit.
+// Body was not added to the hash to avoid multiple comments on the same line.
 const parseSnippetHashFromComment = (finding) => {
     if (finding.path == null || finding.line == null)
         return undefined;
     return crypto.createHash('sha256').update(`${finding.path}-${finding.line}`).digest('hex');
 };
+// Possible edge cases:
+// - Previous finding/comment has moved location in newer commit: Github handles this and passes location within current commit.
+// - New finding on the same line number as a previous finding: Github handles this as the old comment is not present in current commit.
+// - The same finding (previously deleted) is now back. We detect this as a duplicate, so the old conversation is preserved.
 const postFindingsAsReviewComments = async (findings) => {
     var _a;
     const githubToken = core.getInput('github-token');

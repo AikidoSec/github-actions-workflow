@@ -204,7 +204,7 @@ async function createReviewComments(secretKey: string, scanId: number): Promise<
 				path: finding.file,
 				line: finding.end_line,
 				start_line: finding.start_line,
-				body: `**Finding:** ${finding.title}\n**Description:** ${finding.description}\n**Possible remediation:** ${finding.remediation}\n**Details**: [View details](https://app.aikido.dev/featurebranch/scan/${scanId})`
+				body: `${finding.title}\n${finding.description}\n**Remediation:** ${finding.remediation}\n**Details**: [View details](https://app.aikido.dev/featurebranch/scan/${scanId})`
 			}
 		))
 		
