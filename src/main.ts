@@ -197,7 +197,7 @@ async function run(): Promise<void> {
 
 					const findings = findingResponse.introduced_sast_issues.map(finding => (
 						{
-							commit_id: mockedFindingResponse.end_commit_id,
+							commit_id: findingResponse.end_commit_id,
 							path: finding.file,
 							line: finding.end_line,
 							start_line: finding.start_line,
