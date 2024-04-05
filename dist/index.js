@@ -432,7 +432,7 @@ const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
 const crypto = __importStar(__nccwpck_require__(6113));
 const parseSnippetHashFromComment = (finding) => {
-    if (finding.commit_id == null || finding.path == null || finding.line == null)
+    if (finding.path == null || finding.line == null)
         return undefined;
     return crypto.createHash('sha256').update(`${finding.path}-${finding.line}`).digest('hex');
 };

@@ -5,7 +5,7 @@ import * as crypto from 'crypto';
 type TFinding = { commit_id: string, path: string, line: number, start_line: number, body: string }
 
 const parseSnippetHashFromComment = (finding: any): string | undefined => {
-	if (finding.commit_id == null || finding.path == null || finding.line == null) return undefined
+	if (finding.path == null || finding.line == null) return undefined
 
 	return crypto.createHash('sha256').update(`${finding.path}-${finding.line}`).digest('hex');
 }
