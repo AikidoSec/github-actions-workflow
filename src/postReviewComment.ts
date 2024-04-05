@@ -33,31 +33,6 @@ export const postFindingsAsReviewComments = async (findings: TFinding[]): Promis
 		pull_number: pullRequestNumber
 	});
 
-	// Delete review comments that are not in current findings
-	for (const comment of reviewComments) {
-		const isBot = comment.user?.type === 'Bot';
-		const existingCommentId = parseSnippetHashFromComment(comment)
-
-		if (!isBot || existingCommentId === undefined) continue;
-
-		let matchedFinding = undefined
-		for (const finding of findings) {
-			const findingId = parseSnippetHashFromComment(finding)
-
-			if (findingId != existingCommentId) continue;
-
-			matchedFinding = finding
-		}
-
-		if (typeof matchedFinding === 'undefined') {
-			await octokit.rest.pulls.deleteReviewComment({
-				...context.repo,
-				pull_number: pullRequestNumber,
-				comment_id: comment.id
-			});
-		}
-	}
-
 	// Add new review comments
 	for (const finding of findings) {
 		const findingId = parseSnippetHashFromComment(finding)

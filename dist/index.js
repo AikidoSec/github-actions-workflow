@@ -135,6 +135,9 @@ const STATUS_SUCCEEDED = 'SUCCEEDED';
 const STATUS_TIMED_OUT = 'TIMED_OUT';
 const ALLOWED_POST_SCAN_STATUS_OPTIONS = ['on', 'off', 'only_if_new_findings'];
 const ALLOWED_POST_REVIEW_COMMENTS_OPTIONS = ['on', 'off'];
+const shouldPost = (value) => {
+    return (value === 'on' || value === 'only_if_new_findings');
+};
 async function run() {
     var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1;
     try {
@@ -146,7 +149,7 @@ async function run() {
         const failOnIacScan = core.getInput('fail-on-iac-scan');
         const timeoutInSeconds = parseTimeoutDuration(core.getInput('timeout-seconds'));
         let postScanStatusAsComment = core.getInput('post-scan-status-comment');
-        let postReviewComments = core.getInput('post-review-comments');
+        let postReviewComments = core.getInput('post-sast-review-comments');
         if (!['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'].includes(fromSeverity.toUpperCase())) {
             core.setOutput('output', STATUS_FAILED);
             core.setFailed(`Invalid property value for minimum-severity. Allowed values are: LOW, MEDIUM, HIGH, CRITICAL`);
@@ -161,7 +164,7 @@ async function run() {
         postReviewComments = (0, transformPostFindingsAsReviewComment_1.transformPostFindingsAsReviewComment)(postReviewComments);
         if (!ALLOWED_POST_REVIEW_COMMENTS_OPTIONS.includes(postReviewComments)) {
             core.setOutput('ouput', STATUS_FAILED);
-            core.setFailed(`Invalid property value for post-review-comments. Allowed values are: ${ALLOWED_POST_SCAN_STATUS_OPTIONS.join(', ')}`);
+            core.setFailed(`Invalid property value for post-sast-review-comments. Allowed values are: ${ALLOWED_POST_SCAN_STATUS_OPTIONS.join(', ')}`);
             return;
         }
         const startScanPayload = {
@@ -229,8 +232,7 @@ async function run() {
             if (result.diff_url) {
                 moreDetailsText = ` More details at ${result.diff_url}`;
             }
-            const shouldPostComment = (postScanStatusAsComment === 'on' || postScanStatusAsComment === 'only_if_new_findings');
-            if (shouldPostComment && !!((_0 = result.outcome) === null || _0 === void 0 ? void 0 : _0.human_readable_message)) {
+            if (shouldPost(postScanStatusAsComment) && !!((_0 = result.outcome) === null || _0 === void 0 ? void 0 : _0.human_readable_message)) {
                 try {
                     const options = { onlyIfNewFindings: postScanStatusAsComment === 'only_if_new_findings', hasNewFindings: !!result.gate_passed };
                     await (0, postMessage_1.postScanStatusMessage)((_1 = result.outcome) === null || _1 === void 0 ? void 0 : _1.human_readable_message, options);
@@ -244,8 +246,7 @@ async function run() {
                     }
                 }
             }
-            const shouldPostReviewComments = (postReviewComments === 'on');
-            if (shouldPostReviewComments) {
+            if (shouldPost(postReviewComments)) {
                 try {
                     const findingResponse = await (0, api_1.getScanFindings)(secretKey, scanId);
                     const findings = findingResponse.introduced_sast_issues.map(finding => ({
@@ -434,7 +435,7 @@ const parseSnippetHashFromComment = (finding) => {
     return crypto.createHash('sha256').update(`${finding.commit_id}-${finding.path}-${finding.line}`).digest('hex');
 };
 const postFindingsAsReviewComments = async (findings) => {
-    var _a, _b;
+    var _a;
     const githubToken = core.getInput('github-token');
     if (!githubToken || githubToken === '') {
         core.error('unable to post review comments: missing github-token input parameter');
@@ -452,27 +453,6 @@ const postFindingsAsReviewComments = async (findings) => {
         repo: context.repo.repo,
         pull_number: pullRequestNumber
     });
-    // Delete review comments that are not in current findings
-    for (const comment of reviewComments) {
-        const isBot = ((_a = comment.user) === null || _a === void 0 ? void 0 : _a.type) === 'Bot';
-        const existingCommentId = parseSnippetHashFromComment(comment);
-        if (!isBot || existingCommentId === undefined)
-            continue;
-        let matchedFinding = undefined;
-        for (const finding of findings) {
-            const findingId = parseSnippetHashFromComment(finding);
-            if (findingId != existingCommentId)
-                continue;
-            matchedFinding = finding;
-        }
-        if (typeof matchedFinding === 'undefined') {
-            await octokit.rest.pulls.deleteReviewComment({
-                ...context.repo,
-                pull_number: pullRequestNumber,
-                comment_id: comment.id
-            });
-        }
-    }
     // Add new review comments
     for (const finding of findings) {
         const findingId = parseSnippetHashFromComment(finding);
@@ -481,7 +461,7 @@ const postFindingsAsReviewComments = async (findings) => {
         // Check for duplicates
         let existingFinding = undefined;
         for (const comment of reviewComments) {
-            const isBot = ((_b = comment.user) === null || _b === void 0 ? void 0 : _b.type) === 'Bot';
+            const isBot = ((_a = comment.user) === null || _a === void 0 ? void 0 : _a.type) === 'Bot';
             const existingCommentId = parseSnippetHashFromComment(comment);
             if (!isBot || existingCommentId === undefined || findingId != existingCommentId)
                 continue;

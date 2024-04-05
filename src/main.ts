@@ -15,6 +15,10 @@ const STATUS_TIMED_OUT = 'TIMED_OUT';
 const ALLOWED_POST_SCAN_STATUS_OPTIONS = ['on', 'off', 'only_if_new_findings'];
 const ALLOWED_POST_REVIEW_COMMENTS_OPTIONS = ['on', 'off'];
 
+const shouldPost = (value: string): boolean => {
+	return (value === 'on' || value === 'only_if_new_findings')
+}
+
 async function run(): Promise<void> {
 	try {
 		const secretKey: string = core.getInput('secret-key');
@@ -25,7 +29,7 @@ async function run(): Promise<void> {
 		const failOnIacScan: string = core.getInput('fail-on-iac-scan');
 		const timeoutInSeconds = parseTimeoutDuration(core.getInput('timeout-seconds'));
 		let postScanStatusAsComment = core.getInput('post-scan-status-comment');
-		let postReviewComments = core.getInput('post-review-comments');
+		let postReviewComments = core.getInput('post-sast-review-comments');
 
 		if (!['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'].includes(fromSeverity.toUpperCase())) {
 			core.setOutput('output', STATUS_FAILED);
@@ -43,7 +47,7 @@ async function run(): Promise<void> {
 		postReviewComments = transformPostFindingsAsReviewComment(postReviewComments);
 		if (!ALLOWED_POST_REVIEW_COMMENTS_OPTIONS.includes(postReviewComments)) {
 			core.setOutput('ouput', STATUS_FAILED);
-			core.setFailed(`Invalid property value for post-review-comments. Allowed values are: ${ALLOWED_POST_SCAN_STATUS_OPTIONS.join(', ')}`);
+			core.setFailed(`Invalid property value for post-sast-review-comments. Allowed values are: ${ALLOWED_POST_SCAN_STATUS_OPTIONS.join(', ')}`);
 			return;
 		}
 
@@ -132,8 +136,7 @@ async function run(): Promise<void> {
 				moreDetailsText = ` More details at ${result.diff_url}`;
 			}
 
-			const shouldPostComment = (postScanStatusAsComment === 'on' || postScanStatusAsComment === 'only_if_new_findings');
-			if (shouldPostComment && !!result.outcome?.human_readable_message) {
+			if (shouldPost(postScanStatusAsComment) && !!result.outcome?.human_readable_message) {
 				try {
 					const options = { onlyIfNewFindings: postScanStatusAsComment === 'only_if_new_findings', hasNewFindings: !!result.gate_passed };
 					await postScanStatusMessage(result.outcome?.human_readable_message, options);
@@ -146,8 +149,7 @@ async function run(): Promise<void> {
 				}
 			}
 
-			const shouldPostReviewComments = (postReviewComments === 'on');
-			if (shouldPostReviewComments) {
+			if (shouldPost(postReviewComments)) {
 				try {
 					const findingResponse = await getScanFindings(secretKey, scanId)
 
