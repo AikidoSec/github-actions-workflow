@@ -1,16 +1,19 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
+import * as crypto from 'crypto';
 
 type TFinding = { commit_id: string, path: string, line: number, start_line: number, body: string }
 
-const parseUniqueAikidoID = (body: string): string | undefined => {
-	const regex = new RegExp('.*app\.aikido\.dev\/finding\/(.*)\/.*', 'i');
-	const match = regex.exec(body.toLowerCase())
-	if (match == null) {
-		return undefined
-	}
-	return match[1]
+const parseHashFromFinding = (finding: TFinding | any): string | undefined => {
+	if (finding.body == null) return undefined
+
+	const isAikidoScannerBot = finding.body.toLowerCase().includes('https://app.aikido.dev/featurebranch/scan/');
+
+	if (!isAikidoScannerBot || finding.commit_id == null || finding.path == null) return undefined
+
+	return crypto.createHash('sha256').update(`${finding.commit_id}-${finding.path}-${finding.line}`).digest('hex');
 }
+
 
 export const postFindingsAsReviewComments = async (findings: TFinding[]): Promise<void> => {
 	const githubToken = core.getInput('github-token');
@@ -38,13 +41,13 @@ export const postFindingsAsReviewComments = async (findings: TFinding[]): Promis
 	// Delete review comments that are not in current findings
 	for (const comment of reviewComments) {
 		const isBot = comment.user?.type === 'Bot';
-		const existingCommentId = parseUniqueAikidoID(comment.body)
+		const existingCommentId = parseHashFromFinding(comment)
 
 		if (!isBot || existingCommentId === undefined) continue;
 
 		let matchedFinding = undefined
 		for (const finding of findings) {
-			const findingId = parseUniqueAikidoID(finding.body)
+			const findingId = parseHashFromFinding(finding)
 
 			if (findingId != existingCommentId) continue;
 
@@ -62,14 +65,14 @@ export const postFindingsAsReviewComments = async (findings: TFinding[]): Promis
 
 	// Add new review comments
 	for (const finding of findings) {
-		const findingId = parseUniqueAikidoID(finding.body)
+		const findingId = parseHashFromFinding(finding)
 
 		if (findingId === undefined) continue;
 
 		let existingFinding = undefined
 		for (const comment of reviewComments) {
 			const isBot = comment.user?.type === 'Bot';
-			const existingCommentId = parseUniqueAikidoID(comment.body)
+			const existingCommentId = parseHashFromFinding(comment)
 
 			if (!isBot || existingCommentId === undefined || findingId != existingCommentId) continue;
 

@@ -414,13 +414,14 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.postFindingsAsReviewComments = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
-const parseUniqueAikidoID = (body) => {
-    const regex = new RegExp('.*app\.aikido\.dev\/finding\/(.*)\/.*', 'i');
-    const match = regex.exec(body.toLowerCase());
-    if (match == null) {
+const crypto = __importStar(__nccwpck_require__(6113));
+const parseHashFromFinding = (finding) => {
+    if (finding.body == null)
         return undefined;
-    }
-    return match[1];
+    const isAikidoScannerBot = finding.body.toLowerCase().includes('https://app.aikido.dev/featurebranch/scan/');
+    if (!isAikidoScannerBot || finding.commit_id == null || finding.path == null)
+        return undefined;
+    return crypto.createHash('sha256').update(`${finding.commit_id}-${finding.path}-${finding.line}`).digest('hex');
 };
 const postFindingsAsReviewComments = async (findings) => {
     var _a, _b;
@@ -444,12 +445,12 @@ const postFindingsAsReviewComments = async (findings) => {
     // Delete review comments that are not in current findings
     for (const comment of reviewComments) {
         const isBot = ((_a = comment.user) === null || _a === void 0 ? void 0 : _a.type) === 'Bot';
-        const existingCommentId = parseUniqueAikidoID(comment.body);
+        const existingCommentId = parseHashFromFinding(comment);
         if (!isBot || existingCommentId === undefined)
             continue;
         let matchedFinding = undefined;
         for (const finding of findings) {
-            const findingId = parseUniqueAikidoID(finding.body);
+            const findingId = parseHashFromFinding(finding);
             if (findingId != existingCommentId)
                 continue;
             matchedFinding = finding;
@@ -464,13 +465,13 @@ const postFindingsAsReviewComments = async (findings) => {
     }
     // Add new review comments
     for (const finding of findings) {
-        const findingId = parseUniqueAikidoID(finding.body);
+        const findingId = parseHashFromFinding(finding);
         if (findingId === undefined)
             continue;
         let existingFinding = undefined;
         for (const comment of reviewComments) {
             const isBot = ((_b = comment.user) === null || _b === void 0 ? void 0 : _b.type) === 'Bot';
-            const existingCommentId = parseUniqueAikidoID(comment.body);
+            const existingCommentId = parseHashFromFinding(comment);
             if (!isBot || existingCommentId === undefined || findingId != existingCommentId)
                 continue;
             existingFinding = comment;
