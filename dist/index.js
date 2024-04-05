@@ -432,6 +432,7 @@ const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
 const crypto = __importStar(__nccwpck_require__(6113));
 // This function is used to check duplicates on new scans & bypass certain edge cases.
+// The app will compare a hash from an Aikido finding against a hash from a Github comment. As such, we can only use properties that live in both entities (e.g. Aikido hash_snippet can not be used).
 // Commit_id was not added to the hash, because Github will only send over the comments from the current commit.
 // Body was not added to the hash to avoid multiple comments on the same line.
 const parseSnippetHashFromComment = (finding) => {
