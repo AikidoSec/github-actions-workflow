@@ -284,12 +284,11 @@ async function run() {
                     };
                     // TODO Replace mock
                     const findings = mockedFindingResponse.introduced_sast_issues.map(finding => ({
-                        snippet_hash: finding.snippet_hash,
                         commit_id: mockedFindingResponse.end_commit_id,
                         path: finding.file,
                         line: finding.end_line,
                         start_line: finding.start_line,
-                        body: `Finding: ${finding.title}\nDescription: ${finding.description}\nPossible remediation: ${finding.remediation}\nAikido ID: ${finding.snippet_hash}`
+                        body: `Finding: ${finding.title}\nDescription: ${finding.description}\nPossible remediation: ${finding.remediation}`
                     }));
                     core.info(`Received following findings: ${findings}`);
                     if (findings.length > 0) {
@@ -464,13 +463,11 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.postFindingsAsReviewComments = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
-const parseSnippetHashFromComment = (body) => {
-    const regex = new RegExp(".*Aikido ID: (.*)$", "i");
-    const match = regex.exec(body);
-    if (match == null) {
+const crypto = __importStar(__nccwpck_require__(6113));
+const parseSnippetHashFromComment = (finding) => {
+    if (finding.commit_id == null || finding.path == null || finding.line == null)
         return undefined;
-    }
-    return match[1];
+    return crypto.createHash('sha256').update(`${finding.commit_id}-${finding.path}-${finding.line}`).digest('hex');
 };
 const postFindingsAsReviewComments = async (findings) => {
     var _a, _b;
@@ -494,12 +491,12 @@ const postFindingsAsReviewComments = async (findings) => {
     // Delete review comments that are not in current findings
     for (const comment of reviewComments) {
         const isBot = ((_a = comment.user) === null || _a === void 0 ? void 0 : _a.type) === 'Bot';
-        const existingCommentId = parseSnippetHashFromComment(comment.body);
+        const existingCommentId = parseSnippetHashFromComment(comment);
         if (!isBot || existingCommentId === undefined)
             continue;
         let matchedFinding = undefined;
         for (const finding of findings) {
-            const findingId = parseSnippetHashFromComment(finding.body);
+            const findingId = parseSnippetHashFromComment(finding);
             if (findingId != existingCommentId)
                 continue;
             matchedFinding = finding;
@@ -514,13 +511,13 @@ const postFindingsAsReviewComments = async (findings) => {
     }
     // Add new review comments
     for (const finding of findings) {
-        const findingId = parseSnippetHashFromComment(finding.body);
+        const findingId = parseSnippetHashFromComment(finding);
         if (findingId === undefined)
             continue;
         let existingFinding = undefined;
         for (const comment of reviewComments) {
             const isBot = ((_b = comment.user) === null || _b === void 0 ? void 0 : _b.type) === 'Bot';
-            const existingCommentId = parseSnippetHashFromComment(comment.body);
+            const existingCommentId = parseSnippetHashFromComment(comment);
             if (!isBot || existingCommentId === undefined || findingId != existingCommentId)
                 continue;
             existingFinding = comment;

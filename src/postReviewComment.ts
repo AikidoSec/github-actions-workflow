@@ -1,16 +1,13 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
+import * as crypto from 'crypto';
 
-type TFinding = { snippet_hash: string, commit_id: string, path: string, line: number, start_line: number, body: string }
+type TFinding = { commit_id: string, path: string, line: number, start_line: number, body: string }
 
-const parseSnippetHashFromComment = (body: string): string | undefined => {
-	const regex = new RegExp(".*Aikido ID: (.*)$", "i");
-
-	const match = regex.exec(body);
-	if (match == null) {
-		return undefined
-	}
-	return match[1]
+const parseSnippetHashFromComment = (finding: any): string | undefined => {
+	if (finding.commit_id == null || finding.path == null || finding.line == null) return undefined
+	
+	return crypto.createHash('sha256').update(`${finding.commit_id}-${finding.path}-${finding.line}`).digest('hex');
 }
 
 export const postFindingsAsReviewComments = async (findings: TFinding[]): Promise<void> => {
@@ -39,13 +36,13 @@ export const postFindingsAsReviewComments = async (findings: TFinding[]): Promis
 	// Delete review comments that are not in current findings
 	for (const comment of reviewComments) {
 		const isBot = comment.user?.type === 'Bot';
-		const existingCommentId = parseSnippetHashFromComment(comment.body)
+		const existingCommentId = parseSnippetHashFromComment(comment)
 
 		if (!isBot || existingCommentId === undefined) continue;
 
 		let matchedFinding = undefined
 		for (const finding of findings) {
-			const findingId = parseSnippetHashFromComment(finding.body)
+			const findingId = parseSnippetHashFromComment(finding)
 
 			if (findingId != existingCommentId) continue;
 
@@ -63,14 +60,14 @@ export const postFindingsAsReviewComments = async (findings: TFinding[]): Promis
 
 	// Add new review comments
 	for (const finding of findings) {
-		const findingId = parseSnippetHashFromComment(finding.body)
+		const findingId = parseSnippetHashFromComment(finding)
 
 		if (findingId === undefined) continue;
 
 		let existingFinding = undefined
 		for (const comment of reviewComments) {
 			const isBot = comment.user?.type === 'Bot';
-			const existingCommentId = parseSnippetHashFromComment(comment.body)
+			const existingCommentId = parseSnippetHashFromComment(comment)
 
 			if (!isBot || existingCommentId === undefined || findingId != existingCommentId) continue;
 

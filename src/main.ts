@@ -189,12 +189,11 @@ async function run(): Promise<void> {
 					// TODO Replace mock
 					const findings = mockedFindingResponse.introduced_sast_issues.map(finding => (
 						{
-							snippet_hash: finding.snippet_hash,
 							commit_id: mockedFindingResponse.end_commit_id,
 							path: finding.file,
 							line: finding.end_line,
 							start_line: finding.start_line,
-							body: `Finding: ${finding.title}\nDescription: ${finding.description}\nPossible remediation: ${finding.remediation}\nAikido ID: ${finding.snippet_hash}`
+							body: `Finding: ${finding.title}\nDescription: ${finding.description}\nPossible remediation: ${finding.remediation}`
 						}
 					))
 					core.info(`Received following findings: ${findings}`);
