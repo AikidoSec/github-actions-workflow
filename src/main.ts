@@ -40,8 +40,11 @@ async function run(): Promise<void> {
 			return;
 		}
 
+		core.info(`Debug input: ${postReviewComments}`)
 		postReviewComments = transformPostFindingsAsReviewComment(postReviewComments);
+		core.info(`Debug transform: ${postReviewComments}`)
 		if (!ALLOWED_POST_REVIEW_COMMENTS_OPTIONS.includes(postReviewComments)) {
+			core.info(`I shouldn't be here`)
 			core.setOutput('ouput', STATUS_FAILED);
 			core.setFailed(`Invalid property value for post-sast-review-comments. Allowed values are: ${ALLOWED_POST_SCAN_STATUS_OPTIONS.join(', ')}`);
 			return;
