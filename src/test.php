@@ -1,3 +1,3 @@
 <?php
-get_current_user();
+eval($input)
 ?>
