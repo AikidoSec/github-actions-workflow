@@ -19,3 +19,4 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           post-scan-status-comment: true
           post-review-comments: true
+          fail-on-sast-scan: true

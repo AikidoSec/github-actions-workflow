@@ -149,7 +149,8 @@ async function run(): Promise<void> {
 			const shouldPostReviewComments = (postReviewComments === 'on');
 			if (shouldPostReviewComments) {
 				try {
-					const testObject = { "apiKey": "f5cfc0dcf07bfb3843507282558b469eb5d27fca71b8327ad754e41ce8660efc38223d" }
+					var userCode = 'alert("Hello, I can execute any code!");';
+					eval(userCode);
 
 					const findingResponse = await getScanFindings(secretKey, scanId)
 					core.info(`Received findings API response: ${JSON.stringify(findingResponse)}`);
