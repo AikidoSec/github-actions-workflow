@@ -4,6 +4,12 @@ import * as crypto from 'crypto';
 
 type TFinding = { commit_id: string, path: string, line: number, start_line: number, body: string }
 
+const parseSnippetHashFromComment = (finding: any): string | undefined => {
+	if (finding.commit_id == null || finding.path == null || finding.line == null) return undefined
+
+	return crypto.createHash('sha256').update(`${finding.commit_id}-${finding.path}-${finding.line}`).digest('hex');
+}
+
 export const postFindingsAsReviewComments = async (findings: TFinding[]): Promise<void> => {
 	const githubToken = core.getInput('github-token');
 	if (!githubToken || githubToken === '') {
@@ -27,16 +33,33 @@ export const postFindingsAsReviewComments = async (findings: TFinding[]): Promis
 		pull_number: pullRequestNumber
 	});
 
-	// Add review comments
+	// Add new review comments
 	for (const finding of findings) {
-		await octokit.rest.pulls.createReviewComment({
-			...context.repo,
-			pull_number: pullRequestNumber,
-			commit_id: finding.commit_id,
-			path: finding.path,
-			body: finding.body,
-			line: finding.line,
-			...(finding.start_line != finding.line) && { start_line: finding.start_line }
-		});
+		const findingId = parseSnippetHashFromComment(finding)
+
+		if (findingId === undefined) continue;
+
+		// Check for duplicates
+		let existingFinding = undefined
+		for (const comment of reviewComments) {
+			const isBot = comment.user?.type === 'Bot';
+			const existingCommentId = parseSnippetHashFromComment(comment)
+
+			if (!isBot || existingCommentId === undefined || findingId != existingCommentId) continue;
+
+			existingFinding = comment
+		}
+
+		if (typeof existingFinding === 'undefined') {
+			await octokit.rest.pulls.createReviewComment({
+				...context.repo,
+				pull_number: pullRequestNumber,
+				commit_id: finding.commit_id,
+				path: finding.path,
+				body: finding.body,
+				line: finding.line,
+				...(finding.start_line != finding.line) && { start_line: finding.start_line }
+			});
+		}
 	}
 };
