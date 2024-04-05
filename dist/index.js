@@ -248,7 +248,7 @@ async function run() {
             if (shouldPostReviewComments) {
                 try {
                     const findingResponse = await (0, api_1.getScanFindings)(secretKey, scanId);
-                    core.info(`Received following API response: ${findingResponse}`);
+                    core.info(`Received findings API response: ${JSON.stringify(findingResponse)}`);
                     const mockedFindingResponse = {
                         start_commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e',
                         end_commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e',
@@ -299,7 +299,7 @@ async function run() {
                         start_line: finding.start_line,
                         body: `Finding: ${finding.title}\nDescription: ${finding.description}\nPossible remediation: ${finding.remediation}`
                     }));
-                    core.info(`Received following findings: ${findings}`);
+                    core.info(`Received following findings: ${JSON.stringify(findings)}`);
                     if (findings.length > 0) {
                         await (0, postReviewComment_1.postFindingsAsReviewComments)(findings);
                     }
