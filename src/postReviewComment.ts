@@ -7,7 +7,7 @@ type TFinding = { commit_id: string, path: string, line: number, start_line: num
 const parseSnippetHashFromComment = (finding: any): string | undefined => {
 	if (finding.commit_id == null || finding.path == null || finding.line == null) return undefined
 
-	return crypto.createHash('sha256').update(`${finding.commit_id}-${finding.path}-${finding.line}`).digest('hex');
+	return crypto.createHash('sha256').update(`${finding.path}-${finding.line}`).digest('hex');
 }
 
 export const postFindingsAsReviewComments = async (findings: TFinding[]): Promise<void> => {

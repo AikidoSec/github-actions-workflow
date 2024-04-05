@@ -434,7 +434,7 @@ const crypto = __importStar(__nccwpck_require__(6113));
 const parseSnippetHashFromComment = (finding) => {
     if (finding.commit_id == null || finding.path == null || finding.line == null)
         return undefined;
-    return crypto.createHash('sha256').update(`${finding.commit_id}-${finding.path}-${finding.line}`).digest('hex');
+    return crypto.createHash('sha256').update(`${finding.path}-${finding.line}`).digest('hex');
 };
 const postFindingsAsReviewComments = async (findings) => {
     var _a;
