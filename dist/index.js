@@ -263,7 +263,8 @@ async function run() {
                             { snippet_hash: '123', commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e', path: 'dist/index.js', line: 117, start_line: 117, body: `Finding: Test\nDescription: This a test.\nPossible remediation: Carry on\nAikido ID: 123` },
                             { snippet_hash: '124', commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e', path: 'dist/index.js', line: 120, start_line: 120, body: `Finding: Test\nDescription: This a test.\nPossible remediation: Carry on\nAikido ID: 124` },
                             { snippet_hash: '125', commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e', path: 'dist/index.js', line: 124, start_line: 124, body: `Finding: Test\nDescription: This a test.\nPossible remediation: Carry on\nAikido ID: 125` },
-                            { snippet_hash: '126', commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e', path: 'dist/index.js', line: 250, start_line: 234, body: `Finding: Test\nDescription: This a test.\nPossible remediation: Carry on\nAikido ID: 126` }
+                            { snippet_hash: '126', commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e', path: 'dist/index.js', line: 250, start_line: 234, body: `Finding: Test\nDescription: This a test.\nPossible remediation: Carry on\nAikido ID: 126` },
+                            { snippet_hash: '127', commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e', path: 'dist/index.js', line: 250, start_line: 234, body: `Finding: Test\nDescription: This a test.\nPossible remediation: Carry on\nAikido ID: 127` }
                         ];
                         await (0, postReviewComment_1.postFindingsAsReviewComments)(mockedFindings);
                     }
