@@ -25,6 +25,7 @@ export type GetScanStatusResponse =
 
 export type GetScanFindingsResponse =
 		{
+			group_id: number,
 			start_commit_id?: string,
 			end_commit_id: string,
 			introduced_sast_issues: [

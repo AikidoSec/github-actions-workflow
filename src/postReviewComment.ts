@@ -66,15 +66,24 @@ export const postFindingsAsReviewComments = async (findings: TFinding[]): Promis
 		}
 
 		if (typeof existingFinding === 'undefined') {
-			await octokit.rest.pulls.createReviewComment({
-				...context.repo,
-				pull_number: pullRequestNumber,
-				commit_id: finding.commit_id,
-				path: finding.path,
-				body: finding.body,
-				line: finding.line,
-				...(finding.start_line != finding.line) && { start_line: finding.start_line }
-			});
+			try {
+				await octokit.rest.pulls.createReviewComment({
+					...context.repo,
+					pull_number: pullRequestNumber,
+					commit_id: finding.commit_id,
+					path: finding.path,
+					body: finding.body,
+					line: finding.line,
+					...(finding.start_line != finding.line) && { start_line: finding.start_line }
+				});
+			} catch (error) {
+				if (error instanceof Error) {
+					core.info(`unable to post scan status comment due to error: ${error.message}. Tried posting ${JSON.stringify(finding)}`);
+				} else {
+					core.info(`unable to post scan status comment due to unknown error`);
+				}
+			}
+			
 		}
 	}
 };

@@ -283,7 +283,7 @@ async function createReviewComments(secretKey, scanId) {
             path: finding.file,
             line: finding.end_line,
             start_line: finding.start_line,
-            body: `${finding.title}\n${finding.description}\n**Remediation:** ${finding.remediation}\n**Details**: [View details](https://app.aikido.dev/featurebranch/scan/${scanId})`
+            body: `${finding.title}\n${finding.description}\n**Remediation:** ${finding.remediation}\n**Aikido Security:**: [View details](https://app.aikido.dev/featurebranch/scan/${scanId}?groupId=${findingResponse.group_id})`
         }));
         if (findings.length > 0) {
             await (0, postReviewComment_1.postFindingsAsReviewComments)(findings);
@@ -485,15 +485,25 @@ const postFindingsAsReviewComments = async (findings) => {
             existingFinding = comment;
         }
         if (typeof existingFinding === 'undefined') {
-            await octokit.rest.pulls.createReviewComment({
-                ...context.repo,
-                pull_number: pullRequestNumber,
-                commit_id: finding.commit_id,
-                path: finding.path,
-                body: finding.body,
-                line: finding.line,
-                ...(finding.start_line != finding.line) && { start_line: finding.start_line }
-            });
+            try {
+                await octokit.rest.pulls.createReviewComment({
+                    ...context.repo,
+                    pull_number: pullRequestNumber,
+                    commit_id: finding.commit_id,
+                    path: finding.path,
+                    body: finding.body,
+                    line: finding.line,
+                    ...(finding.start_line != finding.line) && { start_line: finding.start_line }
+                });
+            }
+            catch (error) {
+                if (error instanceof Error) {
+                    core.info(`unable to post scan status comment due to error: ${error.message}. Tried posting ${JSON.stringify(finding)}`);
+                }
+                else {
+                    core.info(`unable to post scan status comment due to unknown error`);
+                }
+            }
         }
     }
 };
