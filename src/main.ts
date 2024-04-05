@@ -150,10 +150,47 @@ async function run(): Promise<void> {
 			if (shouldPostReviewComments) {
 				try {
 					const findingResponse = await getScanFindings(secretKey, scanId)
-					const findings = findingResponse.introduced_sast_issues.map(finding => (
+					core.info(`Received following API response: ${findingResponse}`);
+					
+					const mockedFindingResponse = {
+						start_commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e',
+						end_commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e',
+						introduced_sast_issues: [
+							{
+								start_line: 117,
+								end_line: 117,
+								snippet_hash: '123',
+								title: 'Test.',
+								description: 'This is a test.',
+								remediation: 'Carry on.',
+								file: 'dist/index.js'
+							},
+							{
+								start_line: 120,
+								end_line: 120,
+								snippet_hash: '124',
+								title: 'Test.',
+								description: 'This is a test.',
+								remediation: 'Carry on.',
+								file: 'dist/index.js'
+							},
+							{
+								start_line: 234,
+								end_line: 250,
+								snippet_hash: '125',
+								title: 'Test.',
+								description: 'This is a test.',
+								remediation: 'Carry on.',
+								file: 'dist/index.js'
+							},
+						]
+					}
+
+					// TODO Replace mock
+					const findings = mockedFindingResponse.introduced_sast_issues.map(finding => (
 						{
 							snippet_hash: finding.snippet_hash,
-							commit_id: findingResponse.end_commit_id,
+							commit_id: mockedFindingResponse.end_commit_id,
 							path: finding.file,
 							line: finding.end_line,
 							start_line: finding.start_line,
@@ -162,16 +199,8 @@ async function run(): Promise<void> {
 					))
 					core.info(`Received following findings: ${findings}`);
 					
-					// adapt when removing mock
-					if (true || findings.length > 0) {
-						const mockedFindings = [
-							{ snippet_hash: '123', commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e', path: 'dist/index.js', line: 117, start_line: 117, body: `Finding: Test\nDescription: This a test.\nPossible remediation: Carry on\nAikido ID: 123` },
-							{ snippet_hash: '124', commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e', path: 'dist/index.js', line: 120, start_line: 120, body: `Finding: Test\nDescription: This a test.\nPossible remediation: Carry on\nAikido ID: 124` },
-							{ snippet_hash: '125', commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e', path: 'dist/index.js', line: 124, start_line: 124, body: `Finding: Test\nDescription: This a test.\nPossible remediation: Carry on\nAikido ID: 125` },
-							{ snippet_hash: '126', commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e', path: 'dist/index.js', line: 250, start_line: 234, body: `Finding: Test\nDescription: This a test.\nPossible remediation: Carry on\nAikido ID: 126` },
-							{ snippet_hash: '127', commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e', path: 'dist/index.js', line: 250, start_line: 234, body: `Finding: Test\nDescription: This a test.\nPossible remediation: Carry on\nAikido ID: 127` }
-						]
-						await postFindingsAsReviewComments(mockedFindings);
+					if (findings.length > 0) {
+						await postFindingsAsReviewComments(findings);
 					}
 				} catch (error) {
 					if (error instanceof Error) {
