@@ -151,49 +151,6 @@ async function run(): Promise<void> {
 				try {
 					const findingResponse = await getScanFindings(secretKey, scanId)
 					core.info(`Received findings API response: ${JSON.stringify(findingResponse)}`);
-					
-					const mockedFindingResponse = {
-						start_commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e',
-						end_commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e',
-						introduced_sast_issues: [
-							{
-								start_line: 117,
-								end_line: 117,
-								snippet_hash: '123',
-								title: 'Test.',
-								description: 'This is a test.',
-								remediation: 'Carry on.',
-								file: 'dist/index.js'
-							},
-							{
-								start_line: 120,
-								end_line: 120,
-								snippet_hash: '124',
-								title: 'Test.',
-								description: 'This is a test.',
-								remediation: 'Carry on.',
-								file: 'dist/index.js'
-							},
-							{
-								start_line: 137,
-								end_line: 137,
-								snippet_hash: '127',
-								title: 'Test.',
-								description: 'This is a test.',
-								remediation: 'Carry on.',
-								file: 'dist/index.js'
-							},
-							{
-								start_line: 234,
-								end_line: 250,
-								snippet_hash: '125',
-								title: 'Test.',
-								description: 'This is a test.',
-								remediation: 'Carry on.',
-								file: 'dist/index.js'
-							},
-						]
-					}
 
 					const findings = findingResponse.introduced_sast_issues.map(finding => (
 						{
@@ -201,10 +158,10 @@ async function run(): Promise<void> {
 							path: finding.file,
 							line: finding.end_line,
 							start_line: finding.start_line,
-							body: `Finding: ${finding.title}\nDescription: ${finding.description}\nPossible remediation: ${finding.remediation}`
+							body: `**Finding:** ${finding.title}\n**Description:** ${finding.description}\n**Possible remediation:** ${finding.remediation}`
 						}
 					))
-					core.info(`Received following findings: ${JSON.stringify(findings)}`);
+					core.info(`Parsed following findings: ${JSON.stringify(findings)}`);
 					
 					if (findings.length > 0) {
 						await postFindingsAsReviewComments(findings);
