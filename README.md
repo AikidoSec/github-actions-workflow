@@ -21,7 +21,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Detect new vulnerabilities
-        uses: AikidoSec/github-actions-workflow@v1.0.10
+        uses: AikidoSec/github-actions-workflow@v1.0.11
         with:
             secret-key: ${{ secrets.AIKIDO_SECRET_KEY }}
             fail-on-timeout: true
