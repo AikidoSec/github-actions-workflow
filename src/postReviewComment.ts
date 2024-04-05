@@ -56,9 +56,6 @@ export const postFindingsAsReviewComments = async (findings: TFinding[]): Promis
 
 			existingFinding = comment
 		}
-		if (typeof existingFinding !== 'undefined') {
-			core.info(`Finding ${JSON.stringify(finding)} equals ${JSON.stringify(existingFinding)}`)
-		}
 
 		if (typeof existingFinding === 'undefined') {
 			await octokit.rest.pulls.createReviewComment({
