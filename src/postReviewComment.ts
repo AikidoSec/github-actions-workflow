@@ -21,13 +21,13 @@ const parseSnippetHashFromComment = (finding: any): string | undefined => {
 export const postFindingsAsReviewComments = async (findings: TFinding[]): Promise<void> => {
 	const githubToken = core.getInput('github-token');
 	if (!githubToken || githubToken === '') {
-		core.error('unable to post review comments: missing github-token input parameter');
+		core.info('unable to post review comments: missing github-token input parameter');
 		return;
 	}
 
 	const context = github.context;
 	if (context.payload.pull_request == null) {
-		core.error('unable to post review comments: action is not run in a pull request context');
+		core.info('unable to post review comments: action is not run in a pull request context');
 		return;
 	}
 
