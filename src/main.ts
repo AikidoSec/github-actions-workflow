@@ -175,6 +175,15 @@ async function run(): Promise<void> {
 								file: 'dist/index.js'
 							},
 							{
+								start_line: 137,
+								end_line: 137,
+								snippet_hash: '127',
+								title: 'Test.',
+								description: 'This is a test.',
+								remediation: 'Carry on.',
+								file: 'dist/index.js'
+							},
+							{
 								start_line: 234,
 								end_line: 250,
 								snippet_hash: '125',
