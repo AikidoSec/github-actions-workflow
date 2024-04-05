@@ -158,7 +158,7 @@ async function run(): Promise<void> {
 							path: finding.file,
 							line: finding.end_line,
 							start_line: finding.start_line,
-							body: `**Finding:** ${finding.title}\n**Description:** ${finding.description}\n**Possible remediation:** ${finding.remediation}`
+							body: `**Finding:** ${finding.title}\n**Description:** ${finding.description}\n**Possible remediation:** ${finding.remediation}\n**Details**: [View details](https://app.aikido.dev/featurebranch/scan/${scanId})`
 						}
 					))
 					core.info(`Parsed following findings: ${JSON.stringify(findings)}`);
