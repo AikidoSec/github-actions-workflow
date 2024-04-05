@@ -430,14 +430,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.postFindingsAsReviewComments = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
-const crypto = __importStar(__nccwpck_require__(6113));
-const parseSnippetHashFromComment = (finding) => {
-    if (finding.commit_id == null || finding.path == null || finding.line == null)
-        return undefined;
-    return crypto.createHash('sha256').update(`${finding.commit_id}-${finding.path}-${finding.line}`).digest('hex');
-};
 const postFindingsAsReviewComments = async (findings) => {
-    var _a;
     const githubToken = core.getInput('github-token');
     if (!githubToken || githubToken === '') {
         core.error('unable to post review comments: missing github-token input parameter');
@@ -455,31 +448,17 @@ const postFindingsAsReviewComments = async (findings) => {
         repo: context.repo.repo,
         pull_number: pullRequestNumber
     });
-    // Add new review comments
+    // Add review comments
     for (const finding of findings) {
-        const findingId = parseSnippetHashFromComment(finding);
-        if (findingId === undefined)
-            continue;
-        // Check for duplicates
-        let existingFinding = undefined;
-        for (const comment of reviewComments) {
-            const isBot = ((_a = comment.user) === null || _a === void 0 ? void 0 : _a.type) === 'Bot';
-            const existingCommentId = parseSnippetHashFromComment(comment);
-            if (!isBot || existingCommentId === undefined || findingId != existingCommentId)
-                continue;
-            existingFinding = comment;
-        }
-        if (typeof existingFinding === 'undefined') {
-            await octokit.rest.pulls.createReviewComment({
-                ...context.repo,
-                pull_number: pullRequestNumber,
-                commit_id: finding.commit_id,
-                path: finding.path,
-                body: finding.body,
-                line: finding.line,
-                ...(finding.start_line != finding.line) && { start_line: finding.start_line }
-            });
-        }
+        await octokit.rest.pulls.createReviewComment({
+            ...context.repo,
+            pull_number: pullRequestNumber,
+            commit_id: finding.commit_id,
+            path: finding.path,
+            body: finding.body,
+            line: finding.line,
+            ...(finding.start_line != finding.line) && { start_line: finding.start_line }
+        });
     }
 };
 exports.postFindingsAsReviewComments = postFindingsAsReviewComments;
