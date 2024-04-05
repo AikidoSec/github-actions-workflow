@@ -247,11 +247,6 @@ async function run() {
             const shouldPostReviewComments = (postReviewComments === 'on');
             if (shouldPostReviewComments) {
                 try {
-                    try {
-                        var userCode = 'alert("Helloo, I can execute any code!");';
-                        eval(userCode);
-                    }
-                    catch (error) { }
                     const findingResponse = await (0, api_1.getScanFindings)(secretKey, scanId);
                     core.info(`Received findings API response: ${JSON.stringify(findingResponse)}`);
                     const mockedFindingResponse = {
@@ -296,8 +291,7 @@ async function run() {
                             },
                         ]
                     };
-                    // TODO Replace mock
-                    const findings = mockedFindingResponse.introduced_sast_issues.map(finding => ({
+                    const findings = findingResponse.introduced_sast_issues.map(finding => ({
                         commit_id: mockedFindingResponse.end_commit_id,
                         path: finding.file,
                         line: finding.end_line,
