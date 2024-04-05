@@ -135,9 +135,6 @@ const STATUS_SUCCEEDED = 'SUCCEEDED';
 const STATUS_TIMED_OUT = 'TIMED_OUT';
 const ALLOWED_POST_SCAN_STATUS_OPTIONS = ['on', 'off', 'only_if_new_findings'];
 const ALLOWED_POST_REVIEW_COMMENTS_OPTIONS = ['on', 'off'];
-const shouldPost = (value) => {
-    return (value === 'on' || value === 'only_if_new_findings');
-};
 async function run() {
     var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1;
     try {
@@ -232,7 +229,8 @@ async function run() {
             if (result.diff_url) {
                 moreDetailsText = ` More details at ${result.diff_url}`;
             }
-            if (shouldPost(postScanStatusAsComment) && !!((_0 = result.outcome) === null || _0 === void 0 ? void 0 : _0.human_readable_message)) {
+            const shouldPostComment = (postScanStatusAsComment === 'on' || postScanStatusAsComment === 'only_if_new_findings');
+            if (shouldPostComment && !!((_0 = result.outcome) === null || _0 === void 0 ? void 0 : _0.human_readable_message)) {
                 try {
                     const options = { onlyIfNewFindings: postScanStatusAsComment === 'only_if_new_findings', hasNewFindings: !!result.gate_passed };
                     await (0, postMessage_1.postScanStatusMessage)((_1 = result.outcome) === null || _1 === void 0 ? void 0 : _1.human_readable_message, options);
@@ -246,28 +244,9 @@ async function run() {
                     }
                 }
             }
-            if (shouldPost(postReviewComments)) {
-                try {
-                    const findingResponse = await (0, api_1.getScanFindings)(secretKey, scanId);
-                    const findings = findingResponse.introduced_sast_issues.map(finding => ({
-                        commit_id: findingResponse.end_commit_id,
-                        path: finding.file,
-                        line: finding.end_line,
-                        start_line: finding.start_line,
-                        body: `**Finding:** ${finding.title}\n**Description:** ${finding.description}\n**Possible remediation:** ${finding.remediation}\n**Details**: [View details](https://app.aikido.dev/featurebranch/scan/${scanId})`
-                    }));
-                    if (findings.length > 0) {
-                        await (0, postReviewComment_1.postFindingsAsReviewComments)(findings);
-                    }
-                }
-                catch (error) {
-                    if (error instanceof Error) {
-                        core.info(`unable to post review comments due to error: ${error.message}`);
-                    }
-                    else {
-                        core.info(`unable to post review comments due to unknown error`);
-                    }
-                }
+            const shouldPostReviewComments = (postReviewComments === 'on');
+            if (shouldPostReviewComments) {
+                await createReviewComments(secretKey, scanId);
             }
             core.setOutput('scanResultUrl', result.diff_url);
             const { gate_passed = false, new_issues_found = 0, issue_links = [], new_dependency_issues_found = 0, new_iac_issues_found = 0, new_sast_issues_found = 0, } = result;
@@ -294,6 +273,29 @@ async function run() {
         core.setOutput('outcome', STATUS_FAILED);
         if (error instanceof Error)
             core.setFailed(error.message);
+    }
+}
+async function createReviewComments(secretKey, scanId) {
+    try {
+        const findingResponse = await (0, api_1.getScanFindings)(secretKey, scanId);
+        const findings = findingResponse.introduced_sast_issues.map(finding => ({
+            commit_id: findingResponse.end_commit_id,
+            path: finding.file,
+            line: finding.end_line,
+            start_line: finding.start_line,
+            body: `**Finding:** ${finding.title}\n**Description:** ${finding.description}\n**Possible remediation:** ${finding.remediation}\n**Details**: [View details](https://app.aikido.dev/featurebranch/scan/${scanId})`
+        }));
+        if (findings.length > 0) {
+            await (0, postReviewComment_1.postFindingsAsReviewComments)(findings);
+        }
+    }
+    catch (error) {
+        if (error instanceof Error) {
+            core.info(`unable to post review comments due to error: ${error.message}`);
+        }
+        else {
+            core.info(`unable to post review comments due to unknown error`);
+        }
     }
 }
 function parseTimeoutDuration(rawTimeoutInSeconds) {

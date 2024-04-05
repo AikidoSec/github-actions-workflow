@@ -15,10 +15,6 @@ const STATUS_TIMED_OUT = 'TIMED_OUT';
 const ALLOWED_POST_SCAN_STATUS_OPTIONS = ['on', 'off', 'only_if_new_findings'];
 const ALLOWED_POST_REVIEW_COMMENTS_OPTIONS = ['on', 'off'];
 
-const shouldPost = (value: string): boolean => {
-	return (value === 'on' || value === 'only_if_new_findings')
-}
-
 async function run(): Promise<void> {
 	try {
 		const secretKey: string = core.getInput('secret-key');
@@ -136,7 +132,8 @@ async function run(): Promise<void> {
 				moreDetailsText = ` More details at ${result.diff_url}`;
 			}
 
-			if (shouldPost(postScanStatusAsComment) && !!result.outcome?.human_readable_message) {
+			const shouldPostComment = (postScanStatusAsComment === 'on' || postScanStatusAsComment === 'only_if_new_findings');
+			if (shouldPostComment && !!result.outcome?.human_readable_message) {
 				try {
 					const options = { onlyIfNewFindings: postScanStatusAsComment === 'only_if_new_findings', hasNewFindings: !!result.gate_passed };
 					await postScanStatusMessage(result.outcome?.human_readable_message, options);
@@ -149,30 +146,9 @@ async function run(): Promise<void> {
 				}
 			}
 
-			if (shouldPost(postReviewComments)) {
-				try {
-					const findingResponse = await getScanFindings(secretKey, scanId)
-
-					const findings = findingResponse.introduced_sast_issues.map(finding => (
-						{
-							commit_id: findingResponse.end_commit_id,
-							path: finding.file,
-							line: finding.end_line,
-							start_line: finding.start_line,
-							body: `**Finding:** ${finding.title}\n**Description:** ${finding.description}\n**Possible remediation:** ${finding.remediation}\n**Details**: [View details](https://app.aikido.dev/featurebranch/scan/${scanId})`
-						}
-					))
-					
-					if (findings.length > 0) {
-						await postFindingsAsReviewComments(findings);
-					}
-				} catch (error) {
-					if (error instanceof Error) {
-						core.info(`unable to post review comments due to error: ${error.message}`);
-					} else {
-						core.info(`unable to post review comments due to unknown error`);
-					}
-				}
+			const shouldPostReviewComments = (postReviewComments === 'on');
+			if (shouldPostReviewComments) {
+				await createReviewComments(secretKey, scanId)
 			}
 
 			core.setOutput('scanResultUrl', result.diff_url);
@@ -215,6 +191,32 @@ async function run(): Promise<void> {
 	} catch (error) {
 		core.setOutput('outcome', STATUS_FAILED);
 		if (error instanceof Error) core.setFailed(error.message);
+	}
+}
+
+async function createReviewComments(secretKey: string, scanId: number): Promise<void> {
+	try {
+		const findingResponse = await getScanFindings(secretKey, scanId)
+
+		const findings = findingResponse.introduced_sast_issues.map(finding => (
+			{
+				commit_id: findingResponse.end_commit_id,
+				path: finding.file,
+				line: finding.end_line,
+				start_line: finding.start_line,
+				body: `**Finding:** ${finding.title}\n**Description:** ${finding.description}\n**Possible remediation:** ${finding.remediation}\n**Details**: [View details](https://app.aikido.dev/featurebranch/scan/${scanId})`
+			}
+		))
+		
+		if (findings.length > 0) {
+			await postFindingsAsReviewComments(findings);
+		}
+	} catch (error) {
+		if (error instanceof Error) {
+			core.info(`unable to post review comments due to error: ${error.message}`);
+		} else {
+			core.info(`unable to post review comments due to unknown error`);
+		}
 	}
 }
 
