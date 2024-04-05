@@ -30,7 +30,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getScanStatus = exports.startScan = void 0;
+exports.getScanFindings = exports.getScanStatus = exports.startScan = void 0;
 const httpClient = __importStar(__nccwpck_require__(6255));
 const AIKIDO_API_URL = 'https://app.aikido.dev';
 const startScan = async (secret, payload) => {
@@ -76,6 +76,19 @@ const getScanStatus = (secret, scanId) => {
     };
 };
 exports.getScanStatus = getScanStatus;
+const getScanFindings = async (secret, scanId) => {
+    var _a;
+    const requestClient = new httpClient.HttpClient('ci-github-actions');
+    const url = new URL(`${AIKIDO_API_URL}/api/integrations/continuous_integration/scan/${scanId}/introducedSastIssues`);
+    const response = await requestClient.getJson(url.toString(), {
+        'X-AIK-API-SECRET': secret,
+    });
+    if (response.statusCode !== 200 || !response.result) {
+        throw new Error(`fetch findings failed: did not receive a good result: ${JSON.stringify((_a = response.result) !== null && _a !== void 0 ? _a : {})}`);
+    }
+    return response.result;
+};
+exports.getScanFindings = getScanFindings;
 
 
 /***/ }),
@@ -114,11 +127,14 @@ const github = __importStar(__nccwpck_require__(5438));
 const api_1 = __nccwpck_require__(8947);
 const time_1 = __nccwpck_require__(5597);
 const postMessage_1 = __nccwpck_require__(7965);
+const postReviewComment_1 = __nccwpck_require__(6588);
 const transformPostScanStatusAsComment_1 = __nccwpck_require__(3654);
+const transformPostFindingsAsReviewComment_1 = __nccwpck_require__(710);
 const STATUS_FAILED = 'FAILED';
 const STATUS_SUCCEEDED = 'SUCCEEDED';
 const STATUS_TIMED_OUT = 'TIMED_OUT';
 const ALLOWED_POST_SCAN_STATUS_OPTIONS = ['on', 'off', 'only_if_new_findings'];
+const ALLOWED_POST_REVIEW_COMMENTS_OPTIONS = ['on', 'off'];
 async function run() {
     var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1;
     try {
@@ -130,6 +146,7 @@ async function run() {
         const failOnIacScan = core.getInput('fail-on-iac-scan');
         const timeoutInSeconds = parseTimeoutDuration(core.getInput('timeout-seconds'));
         let postScanStatusAsComment = core.getInput('post-scan-status-comment');
+        let postReviewComments = core.getInput('post-sast-review-comments');
         if (!['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'].includes(fromSeverity.toUpperCase())) {
             core.setOutput('output', STATUS_FAILED);
             core.setFailed(`Invalid property value for minimum-severity. Allowed values are: LOW, MEDIUM, HIGH, CRITICAL`);
@@ -139,6 +156,12 @@ async function run() {
         if (!ALLOWED_POST_SCAN_STATUS_OPTIONS.includes(postScanStatusAsComment)) {
             core.setOutput('ouput', STATUS_FAILED);
             core.setFailed(`Invalid property value for post-scan-status-comment. Allowed values are: ${ALLOWED_POST_SCAN_STATUS_OPTIONS.join(', ')}`);
+            return;
+        }
+        postReviewComments = (0, transformPostFindingsAsReviewComment_1.transformPostFindingsAsReviewComment)(postReviewComments);
+        if (!ALLOWED_POST_REVIEW_COMMENTS_OPTIONS.includes(postReviewComments)) {
+            core.setOutput('ouput', STATUS_FAILED);
+            core.setFailed(`Invalid property value for post-sast-review-comments. Allowed values are: ${ALLOWED_POST_SCAN_STATUS_OPTIONS.join(', ')}`);
             return;
         }
         const startScanPayload = {
@@ -221,6 +244,10 @@ async function run() {
                     }
                 }
             }
+            const shouldPostReviewComments = (postReviewComments === 'on');
+            if (shouldPostReviewComments) {
+                await createReviewComments(secretKey, scanId);
+            }
             core.setOutput('scanResultUrl', result.diff_url);
             const { gate_passed = false, new_issues_found = 0, issue_links = [], new_dependency_issues_found = 0, new_iac_issues_found = 0, new_sast_issues_found = 0, } = result;
             if (!gate_passed) {
@@ -246,6 +273,29 @@ async function run() {
         core.setOutput('outcome', STATUS_FAILED);
         if (error instanceof Error)
             core.setFailed(error.message);
+    }
+}
+async function createReviewComments(secretKey, scanId) {
+    try {
+        const findingResponse = await (0, api_1.getScanFindings)(secretKey, scanId);
+        const findings = findingResponse.introduced_sast_issues.map(finding => ({
+            commit_id: findingResponse.end_commit_id,
+            path: finding.file,
+            line: finding.end_line,
+            start_line: finding.start_line,
+            body: `${finding.title}\n${finding.description}\n**Remediation:** ${finding.remediation}\n**Details**: [View details](https://app.aikido.dev/featurebranch/scan/${scanId})`
+        }));
+        if (findings.length > 0) {
+            await (0, postReviewComment_1.postFindingsAsReviewComments)(findings);
+        }
+    }
+    catch (error) {
+        if (error instanceof Error) {
+            core.info(`unable to post review comments due to error: ${error.message}`);
+        }
+        else {
+            core.info(`unable to post review comments due to unknown error`);
+        }
     }
 }
 function parseTimeoutDuration(rawTimeoutInSeconds) {
@@ -348,6 +398,110 @@ exports.postScanStatusMessage = postScanStatusMessage;
 
 /***/ }),
 
+/***/ 6588:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.postFindingsAsReviewComments = void 0;
+const core = __importStar(__nccwpck_require__(2186));
+const github = __importStar(__nccwpck_require__(5438));
+const crypto = __importStar(__nccwpck_require__(6113));
+// This function is used to check duplicates on new scans & bypass certain edge cases.
+// The app will compare a hash from an Aikido finding against a hash from a Github comment. As such, we can only use properties that live in both entities (e.g. Aikido hash_snippet can not be used).
+// Commit_id was not added to the hash, because Github will only send over the comments from the current commit.
+// Body was not added to the hash to avoid multiple comments on the same line.
+const parseSnippetHashFromComment = (finding) => {
+    if (finding.path == null || finding.line == null)
+        return undefined;
+    return crypto.createHash('sha256').update(`${finding.path}-${finding.line}`).digest('hex');
+};
+// Possible edge cases:
+// - Previous finding/comment has moved location in newer commit: Github handles this and passes location within current commit.
+// - New finding on the same line number as a previous finding: Github handles this as the old comment is not present in current commit.
+// - The same finding (previously deleted) is now back. We detect this as a duplicate, so the old conversation is preserved.
+const postFindingsAsReviewComments = async (findings) => {
+    var _a;
+    const githubToken = core.getInput('github-token');
+    if (!githubToken || githubToken === '') {
+        core.info('unable to post review comments: missing github-token input parameter');
+        return;
+    }
+    const context = github.context;
+    if (context.payload.pull_request == null) {
+        core.info('unable to post review comments: action is not run in a pull request context');
+        return;
+    }
+    const pullRequestNumber = context.payload.pull_request.number;
+    const octokit = github.getOctokit(githubToken);
+    const { data: reviewComments } = await octokit.rest.pulls.listReviewComments({
+        owner: context.repo.owner,
+        repo: context.repo.repo,
+        pull_number: pullRequestNumber
+    });
+    // Add new review comments
+    for (const finding of findings) {
+        const findingId = parseSnippetHashFromComment(finding);
+        if (findingId === undefined)
+            continue;
+        // Duplicate detection
+        let existingFinding = undefined;
+        for (const comment of reviewComments) {
+            const isBot = ((_a = comment.user) === null || _a === void 0 ? void 0 : _a.type) === 'Bot';
+            const existingCommentId = parseSnippetHashFromComment(comment);
+            // Skip comments that generate invalid hashes
+            if (existingCommentId === undefined)
+                continue;
+            // Skip comments that aren't a bot
+            if (!isBot)
+                continue;
+            // Check for duplicate
+            if (findingId != existingCommentId)
+                continue;
+            existingFinding = comment;
+        }
+        if (typeof existingFinding === 'undefined') {
+            await octokit.rest.pulls.createReviewComment({
+                ...context.repo,
+                pull_number: pullRequestNumber,
+                commit_id: finding.commit_id,
+                path: finding.path,
+                body: finding.body,
+                line: finding.line,
+                ...(finding.start_line != finding.line) && { start_line: finding.start_line }
+            });
+        }
+    }
+};
+exports.postFindingsAsReviewComments = postFindingsAsReviewComments;
+
+
+/***/ }),
+
 /***/ 5597:
 /***/ ((__unused_webpack_module, exports) => {
 
@@ -364,6 +518,25 @@ const getCurrentUnixTime = () => {
     return now.getTime();
 };
 exports.getCurrentUnixTime = getCurrentUnixTime;
+
+
+/***/ }),
+
+/***/ 710:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.transformPostFindingsAsReviewComment = void 0;
+const transformPostFindingsAsReviewComment = (value) => {
+    if (value === 'true')
+        return 'on';
+    if (value === 'false')
+        return 'off';
+    return value;
+};
+exports.transformPostFindingsAsReviewComment = transformPostFindingsAsReviewComment;
 
 
 /***/ }),

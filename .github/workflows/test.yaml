@@ -18,3 +18,5 @@ jobs:
           minimum-severity: 'MEDIUM'
           github-token: ${{ secrets.GITHUB_TOKEN }}
           post-scan-status-comment: true
+          post-sast-review-comments: true
+          fail-on-sast-scan: true
