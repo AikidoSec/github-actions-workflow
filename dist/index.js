@@ -468,12 +468,19 @@ const postFindingsAsReviewComments = async (findings) => {
         const findingId = parseSnippetHashFromComment(finding);
         if (findingId === undefined)
             continue;
-        // Check for duplicates
+        // Duplicate detection
         let existingFinding = undefined;
         for (const comment of reviewComments) {
             const isBot = ((_a = comment.user) === null || _a === void 0 ? void 0 : _a.type) === 'Bot';
             const existingCommentId = parseSnippetHashFromComment(comment);
-            if (!isBot || existingCommentId === undefined || findingId != existingCommentId)
+            // Skip comments that generate invalid hashes
+            if (existingCommentId === undefined)
+                continue;
+            // Skip comments that aren't a bot
+            if (!isBot)
+                continue;
+            // Check for duplicate
+            if (findingId != existingCommentId)
                 continue;
             existingFinding = comment;
         }

@@ -47,13 +47,20 @@ export const postFindingsAsReviewComments = async (findings: TFinding[]): Promis
 
 		if (findingId === undefined) continue;
 
-		// Check for duplicates
+		// Duplicate detection
 		let existingFinding = undefined
 		for (const comment of reviewComments) {
 			const isBot = comment.user?.type === 'Bot';
 			const existingCommentId = parseSnippetHashFromComment(comment)
 
-			if (!isBot || existingCommentId === undefined || findingId != existingCommentId) continue;
+			// Skip comments that generate invalid hashes
+			if (existingCommentId === undefined) continue;
+
+			// Skip comments that aren't a bot
+			if (!isBot) continue;
+
+			// Check for duplicate
+			if (findingId != existingCommentId) continue;
 
 			existingFinding = comment
 		}
