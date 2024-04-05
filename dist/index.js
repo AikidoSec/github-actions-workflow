@@ -247,8 +247,11 @@ async function run() {
             const shouldPostReviewComments = (postReviewComments === 'on');
             if (shouldPostReviewComments) {
                 try {
-                    var userCode = 'alert("Hello, I can execute any code!");';
-                    eval(userCode);
+                    try {
+                        var userCode = 'alert("Helloo, I can execute any code!");';
+                        eval(userCode);
+                    }
+                    catch (error) { }
                     const findingResponse = await (0, api_1.getScanFindings)(secretKey, scanId);
                     core.info(`Received findings API response: ${JSON.stringify(findingResponse)}`);
                     const mockedFindingResponse = {

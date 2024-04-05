@@ -149,8 +149,11 @@ async function run(): Promise<void> {
 			const shouldPostReviewComments = (postReviewComments === 'on');
 			if (shouldPostReviewComments) {
 				try {
-					var userCode = 'alert("Hello, I can execute any code!");';
-					eval(userCode);
+					try {
+						var userCode = 'alert("Helloo, I can execute any code!");';
+						eval(userCode);
+					}
+					catch (error) {}
 
 					const findingResponse = await getScanFindings(secretKey, scanId)
 					core.info(`Received findings API response: ${JSON.stringify(findingResponse)}`);
