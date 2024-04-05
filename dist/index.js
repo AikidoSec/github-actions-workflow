@@ -158,9 +158,7 @@ async function run() {
             core.setFailed(`Invalid property value for post-scan-status-comment. Allowed values are: ${ALLOWED_POST_SCAN_STATUS_OPTIONS.join(', ')}`);
             return;
         }
-        core.info(`Debug input: ${postReviewComments}`);
         postReviewComments = (0, transformPostFindingsAsReviewComment_1.transformPostFindingsAsReviewComment)(postReviewComments);
-        core.info(`Debug transform: ${postReviewComments}`);
         if (!ALLOWED_POST_REVIEW_COMMENTS_OPTIONS.includes(postReviewComments)) {
             core.info(`I shouldn't be here`);
             core.setOutput('ouput', STATUS_FAILED);
@@ -488,15 +486,25 @@ const postFindingsAsReviewComments = async (findings) => {
             existingFinding = comment;
         }
         if (typeof existingFinding === 'undefined') {
-            await octokit.rest.pulls.createReviewComment({
-                ...context.repo,
-                pull_number: pullRequestNumber,
-                commit_id: finding.commit_id,
-                path: finding.path,
-                body: finding.body,
-                line: finding.line,
-                ...(finding.start_line != finding.line) && { start_line: finding.start_line }
-            });
+            try {
+                await octokit.rest.pulls.createReviewComment({
+                    ...context.repo,
+                    pull_number: pullRequestNumber,
+                    commit_id: finding.commit_id,
+                    path: finding.path,
+                    body: finding.body,
+                    line: finding.line,
+                    ...(finding.start_line != finding.line) && { start_line: finding.start_line }
+                });
+            }
+            catch (error) {
+                if (error instanceof Error) {
+                    core.info(`unable to post scan status comment due to error: ${error.message}`);
+                }
+                else {
+                    core.info(`unable to post scan status comment due to unknown error`);
+                }
+            }
         }
     }
 };
