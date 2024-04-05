@@ -160,7 +160,6 @@ async function run() {
         }
         postReviewComments = (0, transformPostFindingsAsReviewComment_1.transformPostFindingsAsReviewComment)(postReviewComments);
         if (!ALLOWED_POST_REVIEW_COMMENTS_OPTIONS.includes(postReviewComments)) {
-            core.info(`I shouldn't be here`);
             core.setOutput('ouput', STATUS_FAILED);
             core.setFailed(`Invalid property value for post-sast-review-comments. Allowed values are: ${ALLOWED_POST_SCAN_STATUS_OPTIONS.join(', ')}`);
             return;
@@ -284,7 +283,7 @@ async function createReviewComments(secretKey, scanId) {
             path: finding.file,
             line: finding.end_line,
             start_line: finding.start_line,
-            body: `${finding.title}\n${finding.description}\n**Remediation:** ${finding.remediation}\n**Details**: [View details](https://app.aikido.dev/featurebranch/scan/${scanId})`
+            body: `${finding.title}\n${finding.description}\n**Remediation:** ${finding.remediation}\n**Aikido Security:**: [View details](https://app.aikido.dev/featurebranch/scan/${scanId}?groupId=${findingResponse.group_id})`
         }));
         if (findings.length > 0) {
             await (0, postReviewComment_1.postFindingsAsReviewComments)(findings);
