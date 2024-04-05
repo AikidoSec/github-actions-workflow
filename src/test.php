@@ -1,3 +1,3 @@
 <?php
-eval($input)
+var_dump($a);
 ?>
