@@ -23,6 +23,26 @@ export type GetScanStatusResponse =
 			all_scans_completed: false;
 	  };
 
+export type GetScanFindingsResponse =
+		{
+			start_commit_id?: string,
+			end_commit_id: string,
+			introduced_sast_issues: [
+				{
+					author?: string,
+					start_column?: number,
+					end_column?: number,
+					start_line: number,
+					end_line: number,
+					snippet_hash: string,
+					title: string,
+					description: string,
+					remediation: string,
+					file: string
+				}
+			]
+		}
+
 export const startScan = async (secret: string, payload: Object): Promise<number> => {
 	const requestClient = new httpClient.HttpClient('ci-github-actions');
 
@@ -77,4 +97,24 @@ export const getScanStatus = (secret: string, scanId: number): (() => Promise<Ge
 
 		return response.result;
 	};
+};
+
+export const getScanFindings = async (secret: string, scanId: number): Promise<GetScanFindingsResponse> => {
+	const requestClient = new httpClient.HttpClient('ci-github-actions');
+
+	const url = new URL(`${AIKIDO_API_URL}/api/integrations/continuous_integration/scan/${scanId}/introducedSastIssues`);
+
+	const response = await requestClient.getJson<GetScanFindingsResponse>(url.toString(), {
+		'X-AIK-API-SECRET': secret,
+	});
+
+	if (response.statusCode !== 200 || !response.result) {
+		throw new Error(
+			`fetch findings failed: did not receive a good result: ${JSON.stringify(
+				response.result ?? {}
+			)}`
+		);
+	}
+
+	return response.result;
 };

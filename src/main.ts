@@ -1,7 +1,7 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
 
-import { getScanStatus, startScan } from './api';
+import { getScanStatus, startScan, getScanFindings } from './api';
 import { getCurrentUnixTime, sleep } from './time';
 import { postScanStatusMessage } from './postMessage';
 import { postFindingsAsReviewComments } from './postReviewComment';
@@ -12,8 +12,8 @@ const STATUS_FAILED = 'FAILED';
 const STATUS_SUCCEEDED = 'SUCCEEDED';
 const STATUS_TIMED_OUT = 'TIMED_OUT';
 
-const ALLOWED_POST_SCAN_STATUS_OPTIONS = ['on' , 'off' , 'only_if_new_findings'];
-const ALLOWED_POST_REVIEW_COMMENTS_OPTIONS = ['on' , 'off'];
+const ALLOWED_POST_SCAN_STATUS_OPTIONS = ['on', 'off', 'only_if_new_findings'];
+const ALLOWED_POST_REVIEW_COMMENTS_OPTIONS = ['on', 'off'];
 
 async function run(): Promise<void> {
 	try {
@@ -68,10 +68,10 @@ async function run(): Promise<void> {
 			minimum_severity: fromSeverity,
 		};
 
-		if(secretKey){
+		if (secretKey) {
 			const redactedToken = '********************' + secretKey.slice(-4);
 			core.info(`starting a scan with secret key: "${redactedToken}"`);
-		}else{
+		} else {
 			const isLikelyDependabotPr = (startScanPayload.branch_name ?? '').starts_with('dependabot/')
 			if (isLikelyDependabotPr) {
 				core.info(`it looks like the action is running on a dependabot PR, this means that secret variables are not available in this context and thus we can not start a scan. Please see: https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/`);
@@ -149,17 +149,28 @@ async function run(): Promise<void> {
 			const shouldPostReviewComments = (postReviewComments === 'on');
 			if (shouldPostReviewComments) {
 				try {
-					const options = {};
-					//const findings = result.outcome?.findings
-					// TODO: replace MOCK
-					// Unique identifier for findings has temporarily been agreed on having a unique Aikido link within the body referencing the unique Aikido finding
-					const findings = [
-						{ commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e', path: 'dist/index.js', line: 117, start_line: 117, body: 'Test 1 https://app.aikido.dev/finding/127/' },
-						{ commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e', path: 'dist/index.js', line: 120, start_line: 120, body: 'Test 2 https://app.aikido.dev/finding/128/' },
-						{ commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e', path: 'dist/index.js', line: 124, start_line: 124, body: 'Test 3 https://app.aikido.dev/finding/129/' },
-						{ commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e', path: 'dist/index.js', line: 250, start_line: 234, body: 'Test 4 https://app.aikido.dev/finding/130/' }
-					]
-					await postFindingsAsReviewComments(findings);
+					const findingResponse = await getScanFindings(secretKey, scanId)
+					const findings = findingResponse.introduced_sast_issues.map(finding => (
+						{
+							snippet_hash: finding.snippet_hash,
+							commit_id: findingResponse.end_commit_id,
+							path: finding.file,
+							line: finding.end_line,
+							start_line: finding.start_line,
+							body: `Finding: ${finding.title}\nDescription: ${finding.description}\nPossible remediation: ${finding.remediation}\nAikido ID: ${finding.snippet_hash}`
+						}
+					))
+					core.info(`Received following findings: ${findings}`);
+
+					if (findings.length > 0) {
+						const mockedFindings = [
+							{ snippet_hash: '123', commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e', path: 'dist/index.js', line: 117, start_line: 117, body: `Finding: Test\nDescription: This a test.\nPossible remediation: Carry on\nAikido ID: 123` },
+							{ snippet_hash: '124', commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e', path: 'dist/index.js', line: 120, start_line: 120, body: `Finding: Test\nDescription: This a test.\nPossible remediation: Carry on\nAikido ID: 124` },
+							{ snippet_hash: '125', commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e', path: 'dist/index.js', line: 124, start_line: 124, body: `Finding: Test\nDescription: This a test.\nPossible remediation: Carry on\nAikido ID: 125` },
+							{ snippet_hash: '126', commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e', path: 'dist/index.js', line: 250, start_line: 234, body: `Finding: Test\nDescription: This a test.\nPossible remediation: Carry on\nAikido ID: 126` }
+						]
+						await postFindingsAsReviewComments(mockedFindings);
+					}
 				} catch (error) {
 					if (error instanceof Error) {
 						core.info(`unable to post review comments due to error: ${error.message}`);

@@ -30,7 +30,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getScanStatus = exports.startScan = void 0;
+exports.getScanFindings = exports.getScanStatus = exports.startScan = void 0;
 const httpClient = __importStar(__nccwpck_require__(6255));
 const AIKIDO_API_URL = 'https://app.aikido.dev';
 const startScan = async (secret, payload) => {
@@ -76,6 +76,19 @@ const getScanStatus = (secret, scanId) => {
     };
 };
 exports.getScanStatus = getScanStatus;
+const getScanFindings = async (secret, scanId) => {
+    var _a;
+    const requestClient = new httpClient.HttpClient('ci-github-actions');
+    const url = new URL(`${AIKIDO_API_URL}/api/integrations/continuous_integration/scan/${scanId}/introducedSastIssues`);
+    const response = await requestClient.getJson(url.toString(), {
+        'X-AIK-API-SECRET': secret,
+    });
+    if (response.statusCode !== 200 || !response.result) {
+        throw new Error(`fetch findings failed: did not receive a good result: ${JSON.stringify((_a = response.result) !== null && _a !== void 0 ? _a : {})}`);
+    }
+    return response.result;
+};
+exports.getScanFindings = getScanFindings;
 
 
 /***/ }),
@@ -234,17 +247,25 @@ async function run() {
             const shouldPostReviewComments = (postReviewComments === 'on');
             if (shouldPostReviewComments) {
                 try {
-                    const options = {};
-                    //const findings = result.outcome?.findings
-                    // TODO: replace MOCK
-                    // Unique identifier for findings has temporarily been agreed on having a unique Aikido link within the body referencing the unique Aikido finding
-                    const findings = [
-                        { commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e', path: 'dist/index.js', line: 117, start_line: 117, body: 'Test 1 https://app.aikido.dev/finding/127/' },
-                        { commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e', path: 'dist/index.js', line: 120, start_line: 120, body: 'Test 2 https://app.aikido.dev/finding/128/' },
-                        { commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e', path: 'dist/index.js', line: 124, start_line: 124, body: 'Test 3 https://app.aikido.dev/finding/129/' },
-                        { commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e', path: 'dist/index.js', line: 250, start_line: 234, body: 'Test 4 https://app.aikido.dev/finding/130/' }
-                    ];
-                    await (0, postReviewComment_1.postFindingsAsReviewComments)(findings);
+                    const findingResponse = await (0, api_1.getScanFindings)(secretKey, scanId);
+                    const findings = findingResponse.introduced_sast_issues.map(finding => ({
+                        snippet_hash: finding.snippet_hash,
+                        commit_id: findingResponse.end_commit_id,
+                        path: finding.file,
+                        line: finding.end_line,
+                        start_line: finding.start_line,
+                        body: `Finding: ${finding.title}\nDescription: ${finding.description}\nPossible remediation: ${finding.remediation}\nAikido ID: ${finding.snippet_hash}`
+                    }));
+                    core.info(`Received following findings: ${findings}`);
+                    if (findings.length > 0) {
+                        const mockedFindings = [
+                            { snippet_hash: '123', commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e', path: 'dist/index.js', line: 117, start_line: 117, body: `Finding: Test\nDescription: This a test.\nPossible remediation: Carry on\nAikido ID: 123` },
+                            { snippet_hash: '124', commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e', path: 'dist/index.js', line: 120, start_line: 120, body: `Finding: Test\nDescription: This a test.\nPossible remediation: Carry on\nAikido ID: 124` },
+                            { snippet_hash: '125', commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e', path: 'dist/index.js', line: 124, start_line: 124, body: `Finding: Test\nDescription: This a test.\nPossible remediation: Carry on\nAikido ID: 125` },
+                            { snippet_hash: '126', commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e', path: 'dist/index.js', line: 250, start_line: 234, body: `Finding: Test\nDescription: This a test.\nPossible remediation: Carry on\nAikido ID: 126` }
+                        ];
+                        await (0, postReviewComment_1.postFindingsAsReviewComments)(mockedFindings);
+                    }
                 }
                 catch (error) {
                     if (error instanceof Error) {
@@ -414,14 +435,13 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.postFindingsAsReviewComments = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
-const crypto = __importStar(__nccwpck_require__(6113));
-const parseHashFromFinding = (finding) => {
-    if (finding.body == null)
+const parseSnippetHashFromComment = (body) => {
+    const regex = new RegExp(".*Aikido ID: (.*)$", "i");
+    const match = regex.exec(body);
+    if (match == null) {
         return undefined;
-    const isAikidoScannerBot = finding.body.toLowerCase().includes('https://app.aikido.dev/featurebranch/scan/');
-    if (!isAikidoScannerBot || finding.commit_id == null || finding.path == null)
-        return undefined;
-    return crypto.createHash('sha256').update(`${finding.commit_id}-${finding.path}-${finding.line}`).digest('hex');
+    }
+    return match[1];
 };
 const postFindingsAsReviewComments = async (findings) => {
     var _a, _b;
@@ -445,12 +465,12 @@ const postFindingsAsReviewComments = async (findings) => {
     // Delete review comments that are not in current findings
     for (const comment of reviewComments) {
         const isBot = ((_a = comment.user) === null || _a === void 0 ? void 0 : _a.type) === 'Bot';
-        const existingCommentId = parseHashFromFinding(comment);
+        const existingCommentId = parseSnippetHashFromComment(comment.body);
         if (!isBot || existingCommentId === undefined)
             continue;
         let matchedFinding = undefined;
         for (const finding of findings) {
-            const findingId = parseHashFromFinding(finding);
+            const findingId = parseSnippetHashFromComment(finding.body);
             if (findingId != existingCommentId)
                 continue;
             matchedFinding = finding;
@@ -465,13 +485,13 @@ const postFindingsAsReviewComments = async (findings) => {
     }
     // Add new review comments
     for (const finding of findings) {
-        const findingId = parseHashFromFinding(finding);
+        const findingId = parseSnippetHashFromComment(finding.body);
         if (findingId === undefined)
             continue;
         let existingFinding = undefined;
         for (const comment of reviewComments) {
             const isBot = ((_b = comment.user) === null || _b === void 0 ? void 0 : _b.type) === 'Bot';
-            const existingCommentId = parseHashFromFinding(comment);
+            const existingCommentId = parseSnippetHashFromComment(comment.body);
             if (!isBot || existingCommentId === undefined || findingId != existingCommentId)
                 continue;
             existingFinding = comment;
