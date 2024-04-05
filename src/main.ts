@@ -150,7 +150,6 @@ async function run(): Promise<void> {
 			if (shouldPostReviewComments) {
 				try {
 					const findingResponse = await getScanFindings(secretKey, scanId)
-					core.info(`Received findings API response: ${JSON.stringify(findingResponse)}`);
 
 					const findings = findingResponse.introduced_sast_issues.map(finding => (
 						{
@@ -161,7 +160,6 @@ async function run(): Promise<void> {
 							body: `**Finding:** ${finding.title}\n**Description:** ${finding.description}\n**Possible remediation:** ${finding.remediation}\n**Details**: [View details](https://app.aikido.dev/featurebranch/scan/${scanId})`
 						}
 					))
-					core.info(`Parsed following findings: ${JSON.stringify(findings)}`);
 					
 					if (findings.length > 0) {
 						await postFindingsAsReviewComments(findings);

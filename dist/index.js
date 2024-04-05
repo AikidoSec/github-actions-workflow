@@ -248,7 +248,6 @@ async function run() {
             if (shouldPostReviewComments) {
                 try {
                     const findingResponse = await (0, api_1.getScanFindings)(secretKey, scanId);
-                    core.info(`Received findings API response: ${JSON.stringify(findingResponse)}`);
                     const findings = findingResponse.introduced_sast_issues.map(finding => ({
                         commit_id: findingResponse.end_commit_id,
                         path: finding.file,
@@ -256,7 +255,6 @@ async function run() {
                         start_line: finding.start_line,
                         body: `**Finding:** ${finding.title}\n**Description:** ${finding.description}\n**Possible remediation:** ${finding.remediation}\n**Details**: [View details](https://app.aikido.dev/featurebranch/scan/${scanId})`
                     }));
-                    core.info(`Parsed following findings: ${JSON.stringify(findings)}`);
                     if (findings.length > 0) {
                         await (0, postReviewComment_1.postFindingsAsReviewComments)(findings);
                     }
@@ -480,6 +478,7 @@ const postFindingsAsReviewComments = async (findings) => {
         const findingId = parseSnippetHashFromComment(finding);
         if (findingId === undefined)
             continue;
+        // Check for duplicates
         let existingFinding = undefined;
         for (const comment of reviewComments) {
             const isBot = ((_b = comment.user) === null || _b === void 0 ? void 0 : _b.type) === 'Bot';
