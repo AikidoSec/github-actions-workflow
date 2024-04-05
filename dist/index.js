@@ -499,7 +499,7 @@ const postFindingsAsReviewComments = async (findings) => {
             }
             catch (error) {
                 if (error instanceof Error) {
-                    core.info(`unable to post scan status comment due to error: ${error.message}`);
+                    core.info(`unable to post scan status comment due to error: ${error.message}. Tried posting ${JSON.stringify(finding)}`);
                 }
                 else {
                     core.info(`unable to post scan status comment due to unknown error`);
