@@ -257,7 +257,8 @@ async function run() {
                         body: `Finding: ${finding.title}\nDescription: ${finding.description}\nPossible remediation: ${finding.remediation}\nAikido ID: ${finding.snippet_hash}`
                     }));
                     core.info(`Received following findings: ${findings}`);
-                    if (findings.length > 0) {
+                    // adapt when removing mock
+                    if (true) {
                         const mockedFindings = [
                             { snippet_hash: '123', commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e', path: 'dist/index.js', line: 117, start_line: 117, body: `Finding: Test\nDescription: This a test.\nPossible remediation: Carry on\nAikido ID: 123` },
                             { snippet_hash: '124', commit_id: 'fc773d95213d1c1e35acaceac6e37b036abcd09e', path: 'dist/index.js', line: 120, start_line: 120, body: `Finding: Test\nDescription: This a test.\nPossible remediation: Carry on\nAikido ID: 124` },
