@@ -40,6 +40,8 @@ async function run(): Promise<void> {
 			return;
 		}
 
+		console.log(`testerken`)
+
 		postReviewComments = transformPostFindingsAsReviewComment(postReviewComments);
 		if (!ALLOWED_POST_REVIEW_COMMENTS_OPTIONS.includes(postReviewComments)) {
 			core.setOutput('ouput', STATUS_FAILED);
