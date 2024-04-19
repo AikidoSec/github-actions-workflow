@@ -136,7 +136,7 @@ const STATUS_TIMED_OUT = 'TIMED_OUT';
 const ALLOWED_POST_SCAN_STATUS_OPTIONS = ['on', 'off', 'only_if_new_findings'];
 const ALLOWED_POST_REVIEW_COMMENTS_OPTIONS = ['on', 'off'];
 async function run() {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9;
     try {
         const secretKey = core.getInput('secret-key');
         const fromSeverity = core.getInput('minimum-severity');
@@ -168,13 +168,14 @@ async function run() {
             version: '1.0.5',
             branch_name: ((_c = (_b = (_a = github.context.payload) === null || _a === void 0 ? void 0 : _a.pull_request) === null || _b === void 0 ? void 0 : _b.head) === null || _c === void 0 ? void 0 : _c.ref) || ((_d = github.context.payload) === null || _d === void 0 ? void 0 : _d.ref),
             repository_id: (_e = github.context.payload.repository) === null || _e === void 0 ? void 0 : _e.node_id,
-            base_commit_id: ((_h = (_g = (_f = github.context.payload) === null || _f === void 0 ? void 0 : _f.pull_request) === null || _g === void 0 ? void 0 : _g.base) === null || _h === void 0 ? void 0 : _h.sha) || ((_j = github.context.payload) === null || _j === void 0 ? void 0 : _j.before),
-            head_commit_id: ((_m = (_l = (_k = github.context.payload) === null || _k === void 0 ? void 0 : _k.pull_request) === null || _l === void 0 ? void 0 : _l.head) === null || _m === void 0 ? void 0 : _m.sha) || ((_o = github.context.payload) === null || _o === void 0 ? void 0 : _o.after),
-            author: ((_r = (_q = (_p = github.context.payload) === null || _p === void 0 ? void 0 : _p.pull_request) === null || _q === void 0 ? void 0 : _q.user) === null || _r === void 0 ? void 0 : _r.login) ||
-                ((_u = (_t = (_s = github.context.payload) === null || _s === void 0 ? void 0 : _s.head_commit) === null || _t === void 0 ? void 0 : _t.author) === null || _u === void 0 ? void 0 : _u.username),
+            base_commit_id: ((_h = (_g = (_f = github.context.payload) === null || _f === void 0 ? void 0 : _f.pull_request) === null || _g === void 0 ? void 0 : _g.base) === null || _h === void 0 ? void 0 : _h.sha) || ((_j = github.context.payload) === null || _j === void 0 ? void 0 : _j.before) || ((_l = (_k = github.context.payload) === null || _k === void 0 ? void 0 : _k.merge_group) === null || _l === void 0 ? void 0 : _l.base_sha),
+            head_commit_id: ((_p = (_o = (_m = github.context.payload) === null || _m === void 0 ? void 0 : _m.pull_request) === null || _o === void 0 ? void 0 : _o.head) === null || _p === void 0 ? void 0 : _p.sha) || ((_q = github.context.payload) === null || _q === void 0 ? void 0 : _q.after) || ((_s = (_r = github.context.payload) === null || _r === void 0 ? void 0 : _r.merge_group) === null || _s === void 0 ? void 0 : _s.head_sha),
+            author: ((_v = (_u = (_t = github.context.payload) === null || _t === void 0 ? void 0 : _t.pull_request) === null || _u === void 0 ? void 0 : _u.user) === null || _v === void 0 ? void 0 : _v.login) ||
+                ((_y = (_x = (_w = github.context.payload) === null || _w === void 0 ? void 0 : _w.head_commit) === null || _x === void 0 ? void 0 : _x.author) === null || _y === void 0 ? void 0 : _y.username) ||
+                ((_2 = (_1 = (_0 = (_z = github.context.payload) === null || _z === void 0 ? void 0 : _z.merge_group) === null || _0 === void 0 ? void 0 : _0.head_commit) === null || _1 === void 0 ? void 0 : _1.author) === null || _2 === void 0 ? void 0 : _2.name),
             pull_request_metadata: {
-                title: (_w = (_v = github.context.payload) === null || _v === void 0 ? void 0 : _v.pull_request) === null || _w === void 0 ? void 0 : _w.title,
-                url: (_y = (_x = github.context.payload) === null || _x === void 0 ? void 0 : _x.pull_request) === null || _y === void 0 ? void 0 : _y.html_url,
+                title: (_4 = (_3 = github.context.payload) === null || _3 === void 0 ? void 0 : _3.pull_request) === null || _4 === void 0 ? void 0 : _4.title,
+                url: (_6 = (_5 = github.context.payload) === null || _5 === void 0 ? void 0 : _5.pull_request) === null || _6 === void 0 ? void 0 : _6.html_url,
             },
             // user config
             fail_on_dependency_scan: failOnDependencyScan,
@@ -187,7 +188,7 @@ async function run() {
             core.info(`starting a scan with secret key: "${redactedToken}"`);
         }
         else {
-            const isLikelyDependabotPr = ((_z = startScanPayload.branch_name) !== null && _z !== void 0 ? _z : '').starts_with('dependabot/');
+            const isLikelyDependabotPr = ((_7 = startScanPayload.branch_name) !== null && _7 !== void 0 ? _7 : '').starts_with('dependabot/');
             if (isLikelyDependabotPr) {
                 core.info(`it looks like the action is running on a dependabot PR, this means that secret variables are not available in this context and thus we can not start a scan. Please see: https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/`);
                 core.setOutput('outcome', STATUS_SUCCEEDED);
@@ -230,10 +231,10 @@ async function run() {
                 moreDetailsText = ` More details at ${result.diff_url}`;
             }
             const shouldPostComment = (postScanStatusAsComment === 'on' || postScanStatusAsComment === 'only_if_new_findings');
-            if (shouldPostComment && !!((_0 = result.outcome) === null || _0 === void 0 ? void 0 : _0.human_readable_message)) {
+            if (shouldPostComment && !!((_8 = result.outcome) === null || _8 === void 0 ? void 0 : _8.human_readable_message)) {
                 try {
                     const options = { onlyIfNewFindings: postScanStatusAsComment === 'only_if_new_findings', hasNewFindings: !!result.gate_passed };
-                    await (0, postMessage_1.postScanStatusMessage)((_1 = result.outcome) === null || _1 === void 0 ? void 0 : _1.human_readable_message, options);
+                    await (0, postMessage_1.postScanStatusMessage)((_9 = result.outcome) === null || _9 === void 0 ? void 0 : _9.human_readable_message, options);
                 }
                 catch (error) {
                     if (error instanceof Error) {
