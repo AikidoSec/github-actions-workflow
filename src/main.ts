@@ -47,15 +47,18 @@ async function run(): Promise<void> {
 			return;
 		}
 
+		const isMergeGroupAction = !!github.context.payload?.merge_group;
+
 		const startScanPayload = {
 			version: '1.0.5',
-			branch_name: github.context.payload?.pull_request?.head?.ref || github.context.payload?.ref,
+			branch_name: github.context.payload?.pull_request?.head?.ref || github.context.payload?.ref || (isMergeGroupAction && 'merge_group'),
 			repository_id: github.context.payload.repository?.node_id,
-			base_commit_id: github.context.payload?.pull_request?.base?.sha || github.context.payload?.before,
-			head_commit_id: github.context.payload?.pull_request?.head?.sha || github.context.payload?.after,
+			base_commit_id: github.context.payload?.pull_request?.base?.sha || github.context.payload?.before || github.context.payload?.merge_group?.base_sha,
+			head_commit_id: github.context.payload?.pull_request?.head?.sha || github.context.payload?.after || github.context.payload?.merge_group?.head_sha,
 			author:
 				github.context.payload?.pull_request?.user?.login ||
-				github.context.payload?.head_commit?.author?.username,
+				github.context.payload?.head_commit?.author?.username ||
+				github.context.payload?.merge_group?.head_commit?.author?.name,
 			pull_request_metadata: {
 				title: github.context.payload?.pull_request?.title,
 				url: github.context.payload?.pull_request?.html_url,
@@ -132,7 +135,11 @@ async function run(): Promise<void> {
 				moreDetailsText = ` More details at ${result.diff_url}`;
 			}
 
-			const shouldPostComment = (postScanStatusAsComment === 'on' || postScanStatusAsComment === 'only_if_new_findings');
+			let shouldPostComment = (postScanStatusAsComment === 'on' || postScanStatusAsComment === 'only_if_new_findings');
+			if (isMergeGroupAction) {
+				shouldPostComment = false; // no review comments in merge queue
+			}
+
 			if (shouldPostComment && !!result.outcome?.human_readable_message) {
 				try {
 					const options = { onlyIfNewFindings: postScanStatusAsComment === 'only_if_new_findings', hasNewFindings: !!result.gate_passed };
@@ -146,7 +153,11 @@ async function run(): Promise<void> {
 				}
 			}
 
-			const shouldPostReviewComments = (postReviewComments === 'on');
+			let shouldPostReviewComments = (postReviewComments === 'on');
+			if (isMergeGroupAction) {
+				shouldPostReviewComments = false; // no review comments in merge queue
+			}
+
 			if (shouldPostReviewComments) {
 				await createReviewComments(secretKey, scanId)
 			}
