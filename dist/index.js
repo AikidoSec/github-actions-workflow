@@ -158,6 +158,7 @@ async function run() {
             core.setFailed(`Invalid property value for post-scan-status-comment. Allowed values are: ${ALLOWED_POST_SCAN_STATUS_OPTIONS.join(', ')}`);
             return;
         }
+        console.log(`testerken`);
         postReviewComments = (0, transformPostFindingsAsReviewComment_1.transformPostFindingsAsReviewComment)(postReviewComments);
         if (!ALLOWED_POST_REVIEW_COMMENTS_OPTIONS.includes(postReviewComments)) {
             core.setOutput('ouput', STATUS_FAILED);
