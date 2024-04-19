@@ -136,7 +136,7 @@ const STATUS_TIMED_OUT = 'TIMED_OUT';
 const ALLOWED_POST_SCAN_STATUS_OPTIONS = ['on', 'off', 'only_if_new_findings'];
 const ALLOWED_POST_REVIEW_COMMENTS_OPTIONS = ['on', 'off'];
 async function run() {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10;
     try {
         const secretKey = core.getInput('secret-key');
         const fromSeverity = core.getInput('minimum-severity');
@@ -164,17 +164,19 @@ async function run() {
             core.setFailed(`Invalid property value for post-sast-review-comments. Allowed values are: ${ALLOWED_POST_SCAN_STATUS_OPTIONS.join(', ')}`);
             return;
         }
+        const isMergeGroupAction = !!((_a = github.context.payload) === null || _a === void 0 ? void 0 : _a.merge_group);
         const startScanPayload = {
             version: '1.0.5',
-            branch_name: ((_c = (_b = (_a = github.context.payload) === null || _a === void 0 ? void 0 : _a.pull_request) === null || _b === void 0 ? void 0 : _b.head) === null || _c === void 0 ? void 0 : _c.ref) || ((_d = github.context.payload) === null || _d === void 0 ? void 0 : _d.ref),
-            repository_id: (_e = github.context.payload.repository) === null || _e === void 0 ? void 0 : _e.node_id,
-            base_commit_id: ((_h = (_g = (_f = github.context.payload) === null || _f === void 0 ? void 0 : _f.pull_request) === null || _g === void 0 ? void 0 : _g.base) === null || _h === void 0 ? void 0 : _h.sha) || ((_j = github.context.payload) === null || _j === void 0 ? void 0 : _j.before),
-            head_commit_id: ((_m = (_l = (_k = github.context.payload) === null || _k === void 0 ? void 0 : _k.pull_request) === null || _l === void 0 ? void 0 : _l.head) === null || _m === void 0 ? void 0 : _m.sha) || ((_o = github.context.payload) === null || _o === void 0 ? void 0 : _o.after),
-            author: ((_r = (_q = (_p = github.context.payload) === null || _p === void 0 ? void 0 : _p.pull_request) === null || _q === void 0 ? void 0 : _q.user) === null || _r === void 0 ? void 0 : _r.login) ||
-                ((_u = (_t = (_s = github.context.payload) === null || _s === void 0 ? void 0 : _s.head_commit) === null || _t === void 0 ? void 0 : _t.author) === null || _u === void 0 ? void 0 : _u.username),
+            branch_name: ((_d = (_c = (_b = github.context.payload) === null || _b === void 0 ? void 0 : _b.pull_request) === null || _c === void 0 ? void 0 : _c.head) === null || _d === void 0 ? void 0 : _d.ref) || ((_e = github.context.payload) === null || _e === void 0 ? void 0 : _e.ref) || (isMergeGroupAction && 'merge_group'),
+            repository_id: (_f = github.context.payload.repository) === null || _f === void 0 ? void 0 : _f.node_id,
+            base_commit_id: ((_j = (_h = (_g = github.context.payload) === null || _g === void 0 ? void 0 : _g.pull_request) === null || _h === void 0 ? void 0 : _h.base) === null || _j === void 0 ? void 0 : _j.sha) || ((_k = github.context.payload) === null || _k === void 0 ? void 0 : _k.before) || ((_m = (_l = github.context.payload) === null || _l === void 0 ? void 0 : _l.merge_group) === null || _m === void 0 ? void 0 : _m.base_sha),
+            head_commit_id: ((_q = (_p = (_o = github.context.payload) === null || _o === void 0 ? void 0 : _o.pull_request) === null || _p === void 0 ? void 0 : _p.head) === null || _q === void 0 ? void 0 : _q.sha) || ((_r = github.context.payload) === null || _r === void 0 ? void 0 : _r.after) || ((_t = (_s = github.context.payload) === null || _s === void 0 ? void 0 : _s.merge_group) === null || _t === void 0 ? void 0 : _t.head_sha),
+            author: ((_w = (_v = (_u = github.context.payload) === null || _u === void 0 ? void 0 : _u.pull_request) === null || _v === void 0 ? void 0 : _v.user) === null || _w === void 0 ? void 0 : _w.login) ||
+                ((_z = (_y = (_x = github.context.payload) === null || _x === void 0 ? void 0 : _x.head_commit) === null || _y === void 0 ? void 0 : _y.author) === null || _z === void 0 ? void 0 : _z.username) ||
+                ((_3 = (_2 = (_1 = (_0 = github.context.payload) === null || _0 === void 0 ? void 0 : _0.merge_group) === null || _1 === void 0 ? void 0 : _1.head_commit) === null || _2 === void 0 ? void 0 : _2.author) === null || _3 === void 0 ? void 0 : _3.name),
             pull_request_metadata: {
-                title: (_w = (_v = github.context.payload) === null || _v === void 0 ? void 0 : _v.pull_request) === null || _w === void 0 ? void 0 : _w.title,
-                url: (_y = (_x = github.context.payload) === null || _x === void 0 ? void 0 : _x.pull_request) === null || _y === void 0 ? void 0 : _y.html_url,
+                title: (_5 = (_4 = github.context.payload) === null || _4 === void 0 ? void 0 : _4.pull_request) === null || _5 === void 0 ? void 0 : _5.title,
+                url: (_7 = (_6 = github.context.payload) === null || _6 === void 0 ? void 0 : _6.pull_request) === null || _7 === void 0 ? void 0 : _7.html_url,
             },
             // user config
             fail_on_dependency_scan: failOnDependencyScan,
@@ -187,7 +189,7 @@ async function run() {
             core.info(`starting a scan with secret key: "${redactedToken}"`);
         }
         else {
-            const isLikelyDependabotPr = ((_z = startScanPayload.branch_name) !== null && _z !== void 0 ? _z : '').starts_with('dependabot/');
+            const isLikelyDependabotPr = ((_8 = startScanPayload.branch_name) !== null && _8 !== void 0 ? _8 : '').starts_with('dependabot/');
             if (isLikelyDependabotPr) {
                 core.info(`it looks like the action is running on a dependabot PR, this means that secret variables are not available in this context and thus we can not start a scan. Please see: https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/`);
                 core.setOutput('outcome', STATUS_SUCCEEDED);
@@ -229,11 +231,11 @@ async function run() {
             if (result.diff_url) {
                 moreDetailsText = ` More details at ${result.diff_url}`;
             }
-            const shouldPostComment = (postScanStatusAsComment === 'on' || postScanStatusAsComment === 'only_if_new_findings');
-            if (shouldPostComment && !!((_0 = result.outcome) === null || _0 === void 0 ? void 0 : _0.human_readable_message)) {
+            const shouldPostComment = !isMergeGroupAction && (postScanStatusAsComment === 'on' || postScanStatusAsComment === 'only_if_new_findings');
+            if (shouldPostComment && !!((_9 = result.outcome) === null || _9 === void 0 ? void 0 : _9.human_readable_message)) {
                 try {
                     const options = { onlyIfNewFindings: postScanStatusAsComment === 'only_if_new_findings', hasNewFindings: !!result.gate_passed };
-                    await (0, postMessage_1.postScanStatusMessage)((_1 = result.outcome) === null || _1 === void 0 ? void 0 : _1.human_readable_message, options);
+                    await (0, postMessage_1.postScanStatusMessage)((_10 = result.outcome) === null || _10 === void 0 ? void 0 : _10.human_readable_message, options);
                 }
                 catch (error) {
                     if (error instanceof Error) {
@@ -244,7 +246,7 @@ async function run() {
                     }
                 }
             }
-            const shouldPostReviewComments = (postReviewComments === 'on');
+            const shouldPostReviewComments = !isMergeGroupAction && (postReviewComments === 'on');
             if (shouldPostReviewComments) {
                 await createReviewComments(secretKey, scanId);
             }
