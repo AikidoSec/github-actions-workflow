@@ -231,7 +231,10 @@ async function run() {
             if (result.diff_url) {
                 moreDetailsText = ` More details at ${result.diff_url}`;
             }
-            const shouldPostComment = !isMergeGroupAction && (postScanStatusAsComment === 'on' || postScanStatusAsComment === 'only_if_new_findings');
+            let shouldPostComment = (postScanStatusAsComment === 'on' || postScanStatusAsComment === 'only_if_new_findings');
+            if (isMergeGroupAction) {
+                shouldPostComment = false; // no review comments in merge queue
+            }
             if (shouldPostComment && !!((_9 = result.outcome) === null || _9 === void 0 ? void 0 : _9.human_readable_message)) {
                 try {
                     const options = { onlyIfNewFindings: postScanStatusAsComment === 'only_if_new_findings', hasNewFindings: !!result.gate_passed };
@@ -246,7 +249,10 @@ async function run() {
                     }
                 }
             }
-            const shouldPostReviewComments = !isMergeGroupAction && (postReviewComments === 'on');
+            let shouldPostReviewComments = (postReviewComments === 'on');
+            if (isMergeGroupAction) {
+                shouldPostReviewComments = false; // no review comments in merge queue
+            }
             if (shouldPostReviewComments) {
                 await createReviewComments(secretKey, scanId);
             }
