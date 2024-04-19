@@ -40,7 +40,7 @@ async function run(): Promise<void> {
 			return;
 		}
 
-		console.log(`testerken`)
+		console.log(`testerken 22222`)
 
 		postReviewComments = transformPostFindingsAsReviewComment(postReviewComments);
 		if (!ALLOWED_POST_REVIEW_COMMENTS_OPTIONS.includes(postReviewComments)) {
