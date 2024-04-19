@@ -51,11 +51,12 @@ async function run(): Promise<void> {
 			version: '1.0.5',
 			branch_name: github.context.payload?.pull_request?.head?.ref || github.context.payload?.ref,
 			repository_id: github.context.payload.repository?.node_id,
-			base_commit_id: github.context.payload?.pull_request?.base?.sha || github.context.payload?.before,
-			head_commit_id: github.context.payload?.pull_request?.head?.sha || github.context.payload?.after,
+			base_commit_id: github.context.payload?.pull_request?.base?.sha || github.context.payload?.before || github.context.payload?.merge_group?.base_sha,
+			head_commit_id: github.context.payload?.pull_request?.head?.sha || github.context.payload?.after || github.context.payload?.merge_group?.head_sha,
 			author:
 				github.context.payload?.pull_request?.user?.login ||
-				github.context.payload?.head_commit?.author?.username,
+				github.context.payload?.head_commit?.author?.username ||
+				github.context.payload?.merge_group?.head_commit?.author?.name,
 			pull_request_metadata: {
 				title: github.context.payload?.pull_request?.title,
 				url: github.context.payload?.pull_request?.html_url,
